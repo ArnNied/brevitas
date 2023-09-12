@@ -8,10 +8,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      // https://realtimecolors.com/?colors=03021d-fafaff-37075f-fbcbf9-0808e2
+      colors: {
+        text: '#03021d',
+        background: '#fafaff',
+        primary: '#37075f',
+        secondary: '#fbcbf9',
+        accent: '#0808e2',
       },
     },
   },
