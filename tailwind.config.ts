@@ -1,5 +1,7 @@
 import type { Config } from 'tailwindcss';
 
+const defaulTheme = require('tailwindcss/defaultTheme');
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -8,12 +10,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // https://realtimecolors.com/?colors=03021d-fafaff-37075f-fbcbf9-0808e2
+      fontFamily: {
+        sans: ['Roboto', ...defaulTheme.fontFamily.sans],
+      },
+      // https://realtimecolors.com/?colors=03021d-fafaff-37075f-e0c4f8-0808e2
       colors: {
         text: '#03021d',
         background: '#fafaff',
         primary: '#37075f',
-        secondary: '#fbcbf9',
+        secondary: '#e0c4f8',
         accent: '#0808e2',
       },
     },

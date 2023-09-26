@@ -40,7 +40,7 @@ export type TNexus = {
     | NexusExpiryTypeEndless;
   password: string | null;
   createdAt: Timestamp | PlainTimestamp;
-  lastVisited: Timestamp | PlainTimestamp | null;
+  lastVisited: Timestamp | PlainTimestamp;
 };
 
 export type TNexusRequestData = Pick<
