@@ -2,10 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-.centered {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  /* bring your own prefixes */
-  transform: translate(-50%, -50%);
+@layer base {
+  html {
+    scroll-behavior: smooth !important;
+  }
+}
+
+@layer components {
+  .centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+  }
+
+  .container {
+    @apply w-11/12 max-w-6xl mx-auto;
+  }
+
+  .bg-gradient {
+    @apply bg-gradient-to-r from-primary-500 to-accent-500;
+  }
+
+  .text-gradient {
+    // padding plus negative padding to fix descender issue
+    // https://stackoverflow.com/a/53036197/13359128
+    @apply bg-gradient bg-clip-text text-transparent pb-2 -mb-2;
+  }
+
+  .button-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white;
+  }
+
+  .input-base {
+    @apply border border-gray-300 rounded;
+  }
+
+  .input-primary {
+    @apply border-gray-200 outline outline-2 outline-offset-1 outline-primary-500;
+  }
 }

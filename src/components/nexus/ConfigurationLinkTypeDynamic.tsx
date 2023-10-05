@@ -3,9 +3,8 @@ import { useEffect, useState } from 'react';
 
 import { NexusExpiryType } from '@/types/nexus';
 
-import type { NexusExpiryTypeDynamic, TNexus } from '@/types/nexus';
+import type { NexusExpiryTypeDynamic, TNexusRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
-import NexusFormInputGroup from './NexusFormInputGroup';
 
 export enum NexusExpiryDynamicUnit {
   MINUTES = 'MINUTES',
@@ -14,17 +13,13 @@ export enum NexusExpiryDynamicUnit {
   MONTHS = 'MONTHS',
 }
 
-type TExpiryDynamicInputGroupProps = {
-  onChange: Dispatch<
-    SetStateAction<
-      Pick<TNexus, 'shortened' | 'destination' | 'expiry' | 'password'>
-    >
-  >;
+type ConfigurationLinkTypeDynamicProps = {
+  onChange: Dispatch<SetStateAction<TNexusRequestData>>;
 };
 
-export default function ExpiryDynamicInputGroup({
+export default function ConfigurationLinkTypeDynamic({
   onChange,
-}: TExpiryDynamicInputGroupProps): JSX.Element {
+}: ConfigurationLinkTypeDynamicProps): JSX.Element {
   const [valueLocal, setValueLocal] = useState<number>(0);
   const [unit, setUnit] = useState<NexusExpiryDynamicUnit>(
     NexusExpiryDynamicUnit.MINUTES,
@@ -41,18 +36,6 @@ export default function ExpiryDynamicInputGroup({
         },
       };
     });
-
-    // Reset the expiry type to endless on component unmount as a fallback
-    return () => {
-      onChange((prev) => {
-        return {
-          ...prev,
-          expiry: {
-            type: NexusExpiryType.ENDLESS,
-          },
-        };
-      });
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -89,14 +72,18 @@ export default function ExpiryDynamicInputGroup({
   }
 
   return (
-    <NexusFormInputGroup label='Duration'>
-      <div className='w-full flex flex-row'>
+    <div className='space-y-1'>
+      <label htmlFor='link-dynamic-duration' className='block font-semibold'>
+        Duration
+      </label>
+      <div className='flex flex-row w-full space-x-4'>
         <input
+          id='link-dynamic-duration'
           type='number'
           placeholder='Expiry'
           value={valueLocal ?? 0}
           onChange={(e): void => onValueChange(e.target.value, unit)}
-          className='grow px-2 py-1 border border-gray-500 rounded-tl-lg rounded-bl-lg'
+          className='w-full px-2 py-1 rounded appearance-none input-base focus:input-primary'
         />
         <select
           onChange={(e): void =>
@@ -105,6 +92,7 @@ export default function ExpiryDynamicInputGroup({
               e.target.value as NexusExpiryDynamicUnit,
             )
           }
+          className='w-48 h-full px-2 py-1 bg-transparent rounded appearance-none input-base focus:input-primary'
         >
           {Object.values(NexusExpiryDynamicUnit).map((unit) => (
             <option key={unit} value={unit} className='capitalize'>
@@ -113,6 +101,6 @@ export default function ExpiryDynamicInputGroup({
           ))}
         </select>
       </div>
-    </NexusFormInputGroup>
+    </div>
   );
 }

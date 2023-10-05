@@ -1,8 +1,9 @@
 'use client';
 
-import { ResponseData } from '@/types/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+
+import type { ResponseData } from '@/types/shared';
 
 type NexusRedirectPageProps = {
   params: { nexusId: string };
@@ -37,7 +38,7 @@ export default function NexusRedirectPage({
     fetchNexus().catch((err) => {
       console.error(err);
     });
-  }, []);
+  }, [params.nexusId, router]);
 
   return <div>redirecting...</div>;
 }

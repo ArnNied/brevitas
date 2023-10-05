@@ -1,5 +1,7 @@
 import './globals.scss';
 
+import SharedNavbar from '@/components/shared/Navbar';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -14,7 +16,10 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang='en'>
-      <body>{children}</body>
+      <body className='bg-background-base text-text-base antialiased'>
+        <SharedNavbar />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }

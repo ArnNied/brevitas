@@ -5,9 +5,8 @@ import { NexusExpiryType } from '@/types/nexus';
 
 import type { NexusExpiryTypeStatic, TNexus } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
-import NexusFormInputGroup from './NexusFormInputGroup';
 
-type TExpireStaticInputGroupProps = {
+type ConfigurationLinkTypeStaticProps = {
   onChange: Dispatch<
     SetStateAction<
       Pick<TNexus, 'shortened' | 'destination' | 'expiry' | 'password'>
@@ -15,9 +14,9 @@ type TExpireStaticInputGroupProps = {
   >;
 };
 
-export default function ExpireStaticInputGroup({
+export default function ConfigurationLinkTypeStatic({
   onChange,
-}: TExpireStaticInputGroupProps): JSX.Element {
+}: ConfigurationLinkTypeStaticProps): JSX.Element {
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
 
@@ -61,18 +60,6 @@ export default function ExpireStaticInputGroup({
         },
       };
     });
-
-    // Reset the expiry type to endless on component unmount as a fallback
-    return () => {
-      onChange((prev) => {
-        return {
-          ...prev,
-          expiry: {
-            type: NexusExpiryType.ENDLESS,
-          },
-        };
-      });
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,23 +115,31 @@ export default function ExpireStaticInputGroup({
   }
 
   return (
-    <div className='w-full lg:w-1/2 flex flex-row space-x-4'>
-      <NexusFormInputGroup label='Start Date'>
+    <div className='flex flex-row space-x-4'>
+      <div className='w-full space-y-1'>
+        <label htmlFor='link-static-start-date' className='block font-semibold'>
+          Start Date
+        </label>
         <input
+          id='link-static-start-date'
           type='datetime-local'
           value={startDateISOStringWithOffset}
           onChange={(e): void => onDateChange(e, 'start')}
-          className='w-full px-2 py-1 border border-gray-500 rounded-lg'
+          className='w-full px-2 py-1 rounded input-base focus:input-primary'
         />
-      </NexusFormInputGroup>
-      <NexusFormInputGroup label='End Date'>
+      </div>
+      <div className='w-full space-y-1'>
+        <label htmlFor='link-static-end-date' className='block font-semibold'>
+          End Date
+        </label>
         <input
+          id='link-static-end-date'
           type='datetime-local'
           value={endDateISOStringWithOffset}
           onChange={(e): void => onDateChange(e, 'end')}
-          className='w-full px-2 py-1 border border-gray-500 rounded-lg'
+          className='w-full px-2 py-1 rounded input-base focus:input-primary'
         />
-      </NexusFormInputGroup>
+      </div>
     </div>
   );
 }
