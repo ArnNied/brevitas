@@ -16,7 +16,7 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang='en'>
-      <body className='bg-background-base text-text-base antialiased'>
+      <body className='pb-12 bg-background-base text-text-base antialiased'>
         <SharedNavbar />
         <main>{children}</main>
       </body>

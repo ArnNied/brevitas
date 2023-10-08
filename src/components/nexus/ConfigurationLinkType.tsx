@@ -1,15 +1,17 @@
 import { Timestamp } from 'firebase/firestore';
 
+
 import { NexusExpiryType } from '@/types/nexus';
 
 import ConfigurationLinkTypeDynamic from './ConfigurationLinkTypeDynamic';
 import ConfigurationLinkTypeStatic from './ConfigurationLinkTypeStatic';
 
 import type { TNexusRequestData } from '@/types/nexus';
+import type { Dispatch, SetStateAction } from 'react';
 
 type ConfigurationLinkTypeProps = {
   nexusData: TNexusRequestData;
-  setNexusData: React.Dispatch<React.SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
 };
 
 export default function ConfigurationLinkType({
@@ -34,8 +36,8 @@ export default function ConfigurationLinkType({
         ...prev,
         expiry: {
           type: NexusExpiryType.STATIC,
-          start: new Timestamp(0, 0),
-          end: new Timestamp(0, 0),
+          start: new Timestamp(0, 0).toJSON(),
+          end: new Timestamp(0, 0).toJSON(),
         },
       }));
     } else if (value === NexusExpiryType.ENDLESS) {
@@ -61,11 +63,11 @@ export default function ConfigurationLinkType({
           </label>
         ))}
       </fieldset>
-      {nexusData.expiry.type === NexusExpiryType.STATIC && (
-        <ConfigurationLinkTypeDynamic onChange={setNexusData} />
-      )}
       {nexusData.expiry.type === NexusExpiryType.DYNAMIC && (
-        <ConfigurationLinkTypeStatic onChange={setNexusData} />
+        <ConfigurationLinkTypeDynamic setNexusData={setNexusData} />
+      )}
+      {nexusData.expiry.type === NexusExpiryType.STATIC && (
+        <ConfigurationLinkTypeStatic setNexusData={setNexusData} />
       )}
     </>
   );

@@ -5,6 +5,7 @@ import ConfigurationLinkType from './ConfigurationLinkType';
 import ConfigurationProtection from './ConfigurationProtection';
 
 import type { TNexusRequestData } from '@/types/nexus';
+import type { Dispatch, SetStateAction} from 'react';
 
 enum ConfigurationTab {
   TYPE = 'TYPE',
@@ -24,7 +25,7 @@ const configurationTabs = [
 
 type NexusCreateConfigurationProps = {
   nexusData: TNexusRequestData;
-  setNexusData: React.Dispatch<React.SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
 };
 
 export default function HeroNexusCreateConfiguration({
@@ -44,7 +45,7 @@ export default function HeroNexusCreateConfiguration({
             type='button'
             onClick={(): void => setConfigurationTab(id)}
             className={clsx(
-              'block w-full px-2 py-1  text-start rounded transition-colors',
+              'block w-full p-sm  text-start rounded transition-colors',
               {
                 'bg-primary-100 text-primary-600': configurationTab === id,
                 'bg-gray-100 hover:bg-gray-200 text-black':

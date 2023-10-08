@@ -4,7 +4,7 @@ import NexusCreate from '@/components/nexus/NexusCreate';
 
 export default function HomeHeroSection(): JSX.Element {
   return (
-    <section className='space-y-4 container'>
+    <section className='space-y-4 container mt-12'>
       <header className='grid justify-center space-y-2 text-center'>
         <h2 className='font-bold text-3xl md:text-5xl'>
           Make every <span className='text-gradient'>connection</span> count

@@ -1,10 +1,12 @@
 import { clsx } from 'clsx';
 
 import type { TNexusRequestData } from '@/types/nexus';
+import type { Dispatch, SetStateAction } from 'react';
+
 
 type ConfigurationProtectionProps = {
   nexusData: TNexusRequestData;
-  setNexusData: React.Dispatch<React.SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
 };
 
 export default function ConfigurationProtection({
@@ -13,21 +15,22 @@ export default function ConfigurationProtection({
 }: ConfigurationProtectionProps): JSX.Element {
   return (
     <div className='space-y-1'>
-      <label htmlFor='link-password' className='block font-semibold'>
-        Password (Optional)
+      <label>
+        <span className='block font-semibold'>Password (Optional)</span>
+        <input
+          id='link-password'
+          type='password'
+          value={nexusData.password ?? ''}
+          onChange={(e): void =>
+            setNexusData((prev) => ({
+              ...prev,
+              password: e.target.value,
+            }))
+          }
+          className='w-full p-sm rounded input-base focus:input-primary'
+        />
       </label>
-      <input
-        id='link-password'
-        type='password'
-        value={nexusData.password ?? ''}
-        onChange={(e): void =>
-          setNexusData((prev) => ({
-            ...prev,
-            password: e.target.value,
-          }))
-        }
-        className='w-full px-2 py-1 rounded input-base focus:input-primary'
-      />
+
       <div className='flex flex-row justify-end'>
         <button
           type='button'

@@ -3,8 +3,7 @@ import {
   getDocFromServer,
   serverTimestamp,
   updateDoc,
-} from 'firebase/firestore';
-import { Timestamp } from 'firebase-admin/firestore';
+ Timestamp } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
 import { nexusCollection } from '@/lib/firebase/firestore';

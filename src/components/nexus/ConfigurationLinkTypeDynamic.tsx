@@ -6,6 +6,24 @@ import { NexusExpiryType } from '@/types/nexus';
 import type { NexusExpiryTypeDynamic, TNexusRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
+function calculateRealValue(
+  value: number,
+  unit: NexusExpiryDynamicUnit,
+): number {
+  let unitMultiplier = 0;
+  if (unit === NexusExpiryDynamicUnit.MINUTES) {
+    unitMultiplier = 60;
+  } else if (unit === NexusExpiryDynamicUnit.HOURS) {
+    unitMultiplier = 3600;
+  } else if (unit === NexusExpiryDynamicUnit.DAYS) {
+    unitMultiplier = 86400;
+  } else if (unit === NexusExpiryDynamicUnit.MONTHS) {
+    unitMultiplier = 2592000;
+  }
+
+  return value * unitMultiplier;
+}
+
 export enum NexusExpiryDynamicUnit {
   MINUTES = 'MINUTES',
   HOURS = 'HOURS',
@@ -14,62 +32,34 @@ export enum NexusExpiryDynamicUnit {
 }
 
 type ConfigurationLinkTypeDynamicProps = {
-  onChange: Dispatch<SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
 };
 
 export default function ConfigurationLinkTypeDynamic({
-  onChange,
+  setNexusData,
 }: ConfigurationLinkTypeDynamicProps): JSX.Element {
-  const [valueLocal, setValueLocal] = useState<number>(0);
+  const [valueLocal, setValueLocal] = useState<number>(1);
   const [unit, setUnit] = useState<NexusExpiryDynamicUnit>(
-    NexusExpiryDynamicUnit.MINUTES,
+    NexusExpiryDynamicUnit.MONTHS,
   );
 
   useEffect(() => {
-    // Set initial values on component mount
-    onChange((prev) => {
-      return {
-        ...prev,
-        expiry: {
-          type: NexusExpiryType.DYNAMIC,
-          value: new Timestamp(0, 0).toJSON(),
-        },
-      };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function onValueChange(value: string, unit: NexusExpiryDynamicUnit): void {
-    // Set the local state
-    setValueLocal(parseInt(value));
-    setUnit(unit);
-
-    // Set a multiplier based on the unit
-    let unitMultiplier = 0;
-    if (unit === NexusExpiryDynamicUnit.MINUTES) {
-      unitMultiplier = 60;
-    } else if (unit === NexusExpiryDynamicUnit.HOURS) {
-      unitMultiplier = 3600;
-    } else if (unit === NexusExpiryDynamicUnit.DAYS) {
-      unitMultiplier = 86400;
-    } else if (unit === NexusExpiryDynamicUnit.MONTHS) {
-      unitMultiplier = 2592000;
-    }
-
+    const calculatedValue = calculateRealValue(valueLocal, unit);
     // Set the expiry data
     // While multiplying the value with the unit multiplier
     const expiryData: NexusExpiryTypeDynamic = {
       type: NexusExpiryType.DYNAMIC,
-      value: new Timestamp(parseInt(value) * unitMultiplier, 0).toJSON(),
+      value: new Timestamp(calculatedValue, 0).toJSON(),
     };
 
-    onChange((prev) => {
+    setNexusData((prev) => {
       return {
         ...prev,
         expiry: { ...expiryData },
       };
     });
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueLocal, unit]);
 
   return (
     <div className='space-y-1'>
@@ -82,17 +72,15 @@ export default function ConfigurationLinkTypeDynamic({
           type='number'
           placeholder='Expiry'
           value={valueLocal ?? 0}
-          onChange={(e): void => onValueChange(e.target.value, unit)}
-          className='w-full px-2 py-1 rounded appearance-none input-base focus:input-primary'
+          onChange={(e): void => setValueLocal(parseInt(e.target.value))}
+          className='w-full p-sm rounded appearance-none input-base focus:input-primary'
         />
         <select
+          value={unit}
           onChange={(e): void =>
-            onValueChange(
-              valueLocal.toString(),
-              e.target.value as NexusExpiryDynamicUnit,
-            )
+            setUnit(e.target.value as NexusExpiryDynamicUnit)
           }
-          className='w-48 h-full px-2 py-1 bg-transparent rounded appearance-none input-base focus:input-primary'
+          className='w-48 h-full p-sm bg-transparent rounded appearance-none input-base focus:input-primary'
         >
           {Object.values(NexusExpiryDynamicUnit).map((unit) => (
             <option key={unit} value={unit} className='capitalize'>

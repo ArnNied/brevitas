@@ -26,7 +26,7 @@
   }
 
   .text-gradient {
-    // padding plus negative padding to fix descender issue
+    // padding plus negative margin to fix descender issue
     // https://stackoverflow.com/a/53036197/13359128
     @apply bg-gradient bg-clip-text text-transparent pb-2 -mb-2;
   }
@@ -41,5 +41,13 @@
 
   .input-primary {
     @apply border-gray-200 outline outline-2 outline-offset-1 outline-primary-500;
+  }
+
+  .p-sm {
+    @apply px-2 py-1;
+  }
+
+  .p-md {
+    @apply px-3 py-2;
   }
 }

@@ -34,7 +34,7 @@ export function getMonthList(
   );
 }
 
-export function getDaysInMonth(year: number, monthIndex: number): number[] {
+export function getDaysInMonth(year: number, monthIndex: number): number {
   // Ensure the monthIndex is within the valid range (0-11)
   if (monthIndex < 0 || monthIndex > 11) {
     throw new Error(
@@ -59,8 +59,5 @@ export function getDaysInMonth(year: number, monthIndex: number): number[] {
   ];
 
   // Return the array for the specified month
-  return Array.from(
-    { length: daysInMonth[monthIndex] },
-    (_, index) => index + 1,
-  );
+  return daysInMonth[monthIndex];
 }

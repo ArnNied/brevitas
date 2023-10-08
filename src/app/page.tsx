@@ -1,4 +1,4 @@
-import HomeHeroSection from '@/components/Home/HeroSection';
+import HomeHeroSection from '@/components/home/HeroSection';
 
 export default function HomePage(): JSX.Element {
   return (
