@@ -3,7 +3,6 @@ import { clsx } from 'clsx';
 import type { TNexusRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
-
 type ConfigurationProtectionProps = {
   nexusData: TNexusRequestData;
   setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
@@ -18,7 +17,6 @@ export default function ConfigurationProtection({
       <label>
         <span className='block font-semibold'>Password (Optional)</span>
         <input
-          id='link-password'
           type='password'
           value={nexusData.password ?? ''}
           onChange={(e): void =>

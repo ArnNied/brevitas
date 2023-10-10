@@ -6,7 +6,7 @@ export default function HomeHeroSection(): JSX.Element {
   return (
     <section className='space-y-4 container mt-12'>
       <header className='grid justify-center space-y-2 text-center'>
-        <h2 className='font-bold text-3xl md:text-5xl'>
+        <h2 className='font-bold text-3xl sm:text-4xl md:text-5xl'>
           Make every <span className='text-gradient'>connection</span> count
         </h2>
         <p className='max-w-prose text-gray-700 md:text-lg text-center'>

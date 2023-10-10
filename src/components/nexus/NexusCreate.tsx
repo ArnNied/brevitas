@@ -112,7 +112,9 @@ export default function NexusCreate(): JSX.Element {
 
         <div className='flex flex-row items-center space-x-4'>
           <div className='flex grow h-0.5 bg-gray-300'></div>
-          <p className='text-sm text-gray-400 tracking-widest'>CONFIGURATION</p>
+          <p className='text-sm text-gray-400 tracking-widest cursor-default'>
+            CONFIGURATION
+          </p>
           <div className='flex grow h-0.5 bg-gray-300'></div>
         </div>
 

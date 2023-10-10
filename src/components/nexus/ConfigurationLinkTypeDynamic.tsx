@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 
 import { NexusExpiryType } from '@/types/nexus';
 
+import CustomSelect from '../shared/CustomSelect';
+
 import type { NexusExpiryTypeDynamic, TNexusRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -39,12 +41,12 @@ export default function ConfigurationLinkTypeDynamic({
   setNexusData,
 }: ConfigurationLinkTypeDynamicProps): JSX.Element {
   const [valueLocal, setValueLocal] = useState<number>(1);
-  const [unit, setUnit] = useState<NexusExpiryDynamicUnit>(
+  const [selectedUnit, setSelectedUnit] = useState<NexusExpiryDynamicUnit>(
     NexusExpiryDynamicUnit.MONTHS,
   );
 
   useEffect(() => {
-    const calculatedValue = calculateRealValue(valueLocal, unit);
+    const calculatedValue = calculateRealValue(valueLocal, selectedUnit);
     // Set the expiry data
     // While multiplying the value with the unit multiplier
     const expiryData: NexusExpiryTypeDynamic = {
@@ -59,35 +61,31 @@ export default function ConfigurationLinkTypeDynamic({
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueLocal, unit]);
+  }, [valueLocal, selectedUnit]);
 
   return (
-    <div className='space-y-1'>
-      <label htmlFor='link-dynamic-duration' className='block font-semibold'>
+    <div className='space-y-2'>
+      <label
+        htmlFor='link-configuration-dynamic-value'
+        className='block font-semibold'
+      >
         Duration
       </label>
       <div className='flex flex-row w-full space-x-4'>
         <input
-          id='link-dynamic-duration'
+          id='link-configuration-dynamic-value'
           type='number'
           placeholder='Expiry'
           value={valueLocal ?? 0}
           onChange={(e): void => setValueLocal(parseInt(e.target.value))}
-          className='w-full p-sm rounded appearance-none input-base focus:input-primary'
+          className='w-full p-md rounded appearance-none input-base focus:input-primary'
         />
-        <select
-          value={unit}
-          onChange={(e): void =>
-            setUnit(e.target.value as NexusExpiryDynamicUnit)
-          }
-          className='w-48 h-full p-sm bg-transparent rounded appearance-none input-base focus:input-primary'
-        >
-          {Object.values(NexusExpiryDynamicUnit).map((unit) => (
-            <option key={unit} value={unit} className='capitalize'>
-              {unit}
-            </option>
-          ))}
-        </select>
+        <CustomSelect
+          value={selectedUnit}
+          setValue={setSelectedUnit}
+          values={Object.values(NexusExpiryDynamicUnit)}
+          width='w-36'
+        />
       </div>
     </div>
   );

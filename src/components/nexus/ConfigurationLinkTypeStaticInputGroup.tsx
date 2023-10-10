@@ -1,6 +1,8 @@
 import { Timestamp } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
+import CustomSelect from '../shared/CustomSelect';
+
 import type { NexusExpiryTypeStatic, TNexusRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -53,14 +55,6 @@ export function getDaysInMonth(year: number, monthIndex: number): number {
   return daysInMonth[monthIndex];
 }
 
-type DatetimeValue = {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-};
-
 type ConfigurationLinkTypeStaticInputGroupProps = {
   type: 'start' | 'end';
   setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
@@ -72,28 +66,17 @@ export default function ConfigurationLinkTypeStaticInputGroup({
 }: ConfigurationLinkTypeStaticInputGroupProps): JSX.Element {
   const now = useMemo(() => new Date(), []);
 
-  const [datetime, setDatetime] = useState<DatetimeValue>({
-    year: now.getFullYear(),
-    month: now.getMonth(),
-    day: now.getDate(),
-    hour: now.getHours(),
-    minute: now.getMinutes(),
-  });
+  const [year, setYear] = useState<number>(now.getFullYear());
+  const [month, setMonth] = useState<number>(now.getMonth());
+  const [day, setDay] = useState<number>(now.getDate());
+  const [hour, setHour] = useState<number>(now.getHours());
+  const [minute, setMinute] = useState<number>(now.getMinutes());
 
   const monthList = useMemo(() => getMonthList(), []);
-  const daysInMonth = useMemo(
-    () => getDaysInMonth(datetime.year, datetime.month),
-    [datetime.year, datetime.month],
-  );
+  const daysInMonth = useMemo(() => getDaysInMonth(year, month), [year, month]);
 
   useEffect(() => {
-    const dt = new Date(
-      datetime.year,
-      datetime.month,
-      datetime.day,
-      datetime.hour,
-      datetime.minute,
-    );
+    const dt = new Date(year, month, day, hour, minute);
 
     setNexusData((prev) => {
       return {
@@ -105,107 +88,105 @@ export default function ConfigurationLinkTypeStaticInputGroup({
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datetime]);
+  }, [year, month, day, hour, minute]);
 
   return (
-    <fieldset className='w-full space-y-2'>
+    <fieldset className='w-full'>
       <legend className='font-semibold'>
         {type === 'start' ? 'Start Date' : 'End Date'}
       </legend>
       <div className='flex flex-row space-x-2'>
-        <label className='w-full'>
-          <span className='block'>Year</span>
-          <select
-            value={datetime.year}
-            onChange={(e): void => {
-              setDatetime((prev) => ({
-                ...prev,
-                year: parseInt(e.target.value),
-              }));
-            }}
-            className='w-full p-md bg-transparent appearance-none input-base focus:input-primary rounded'
+        <div className='w-full'>
+          <label
+            className='block'
+            htmlFor={`link-configuration-static-${type}-year`}
           >
-            {Array.from({ length: 5 }, (_, index) => (
-              <option key={index}>{now.getFullYear() + index}</option>
-            ))}
-          </select>
-        </label>
-        <label className='w-full'>
-          <span className='block'>Month</span>
-          <select
-            value={datetime.month}
-            onChange={(e): void => {
-              setDatetime((prev) => ({
-                ...prev,
-                month: parseInt(e.target.value),
-              }));
-            }}
-            className='w-full p-md bg-transparent appearance-none input-base focus:input-primary rounded'
+            Year
+          </label>
+          <CustomSelect
+            id={`link-configuration-static-${type}-year`}
+            value={year}
+            values={Array.from({ length: 7 }, (_, index) => {
+              return now.getFullYear() + index - 2;
+            })}
+            setValue={setYear}
+          />
+        </div>
+        <div className='w-full'>
+          <label
+            className='block'
+            id={`link-configuration-static-${type}-month`}
           >
-            {monthList.map((month, index) => (
-              <option key={index} value={index}>
-                {month}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className='w-full'>
-          <span className='block'>Day</span>
-          <select
-            value={datetime.day}
-            onChange={(e): void => {
-              setDatetime((prev) => ({
-                ...prev,
-                day: parseInt(e.target.value),
-              }));
-            }}
-            className='w-full p-md bg-transparent appearance-none input-base focus:input-primary rounded'
-          >
-            {Array.from({ length: daysInMonth }, (_, index) => (
-              <option key={index}>{index + 1}</option>
-            ))}
-          </select>
-        </label>
+            Month
+          </label>
+          <CustomSelect
+            id={`link-configuration-static-${type}-month`}
+            display={monthList[month]}
+            value={month}
+            values={monthList.map((month, index) => {
+              return {
+                value: index,
+                label: month,
+              };
+            })}
+            setValue={setMonth}
+          />
+        </div>
+        <div className='w-full'>
+          <label className='block' id={`link-configuration-static-${type}-day`}>
+            Day
+          </label>
+          <CustomSelect
+            id={`link-configuration-static-${type}-day`}
+            value={day}
+            values={Array.from({ length: daysInMonth }, (_, index) => {
+              return index + 1;
+            })}
+            setValue={setDay}
+          />
+        </div>
       </div>
-      <div className='flex flex-row space-x-2'>
-        <label className='w-full'>
-          <span className='block'>Hour</span>
-          <select
-            value={datetime.hour}
-            onChange={(e): void => {
-              setDatetime((prev) => ({
-                ...prev,
-                hour: parseInt(e.target.value),
-              }));
-            }}
-            className='w-full p-md bg-transparent appearance-none input-base focus:input-primary rounded'
+      <div className='flex flex-row mt-2 space-x-2'>
+        <div className='w-full'>
+          <label
+            className='block'
+            id={`link-configuration-static-${type}-hour`}
           >
-            {Array.from({ length: 24 }, (_, index) => (
-              <option key={index} value={index}>
-                {index.toString().padStart(2, '0')}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className='w-full'>
-          <span className='block'>Minute</span>
-          <select
-            value={datetime.minute}
-            onChange={(e): void => {
-              setDatetime((prev) => ({
-                ...prev,
-                minute: parseInt(e.target.value),
-              }));
-            }}
-            className='w-full p-md bg-transparent appearance-none input-base focus:input-primary rounded'
+            Hour
+          </label>
+          <CustomSelect
+            id={`link-configuration-static-${type}-hour`}
+            display={hour.toString().padStart(2, '0')}
+            value={hour}
+            values={Array.from({ length: 24 }, (_, index) => {
+              return {
+                value: index,
+                label: index.toString().padStart(2, '0'),
+              };
+            })}
+            setValue={setHour}
+          />
+        </div>
+        <div className='w-full'>
+          <label
+            className='block'
+            id={`link-configuration-static-${type}-minute`}
           >
-            {Array.from({ length: 60 }, (_, index) => (
-              <option key={index} value={index}>
-                {index.toString().padStart(2, '0')}
-              </option>
-            ))}
-          </select>
-        </label>
+            Minute
+          </label>
+          <CustomSelect
+            id={`link-configuration-static-${type}-minute`}
+            display={minute.toString().padStart(2, '0')}
+            value={minute}
+            values={Array.from({ length: 60 }, (_, index) => {
+              return {
+                value: index,
+                label: index.toString().padStart(2, '0'),
+              };
+            })}
+            setValue={setMinute}
+          />
+        </div>
       </div>
     </fieldset>
   );
