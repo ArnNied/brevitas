@@ -1,3 +1,4 @@
+import { hash } from 'bcrypt';
 import {
   doc,
   getDocFromServer,
@@ -8,67 +9,33 @@ import {
 import { NextResponse } from 'next/server';
 
 import { nexusCollection } from '@/lib/firebase/firestore';
+import { validateNexusData } from '@/lib/nexus';
 import { generateString } from '@/lib/utils';
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
+import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
 import type {
   NexusExpiryTypeDynamic,
   NexusExpiryTypeEndless,
   NexusExpiryTypeStatic,
   TNexus,
-  TNexusRequestData,
+  NexusCreateRequestData,
 } from '@/types/nexus';
 import type { WithFieldValue } from 'firebase/firestore';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const nexusData: TNexusRequestData = await req.json();
+  const reqData: NexusCreateRequestData = await req.json();
 
-  if (!nexusData.destination) {
+  const validatedNexusData = validateNexusData(reqData);
+
+  if (typeof validatedNexusData !== 'object') {
     return NextResponse.json(
-      { message: 'Missing destination' },
-      { status: 400 },
-    );
-  } else if (typeof nexusData.destination !== 'string') {
-    return NextResponse.json(
-      { message: 'Invalid destination' },
-      { status: 400 },
-    );
-  } else if (!nexusData.expiry) {
-    return NextResponse.json({ message: 'Missing expiry' }, { status: 400 });
-  } else if (!nexusData.expiry.type) {
-    return NextResponse.json(
-      { message: 'Missing expiry type' },
-      { status: 400 },
-    );
-  } else if (!Object.values(NexusExpiryType).includes(nexusData.expiry.type)) {
-    return NextResponse.json(
-      { message: 'Invalid expiry type' },
-      { status: 400 },
+      { message: validateNexusData },
+      { status: HTTPStatusCode.BAD_REQUEST },
     );
   }
-  if (nexusData.password && typeof nexusData.password !== 'string') {
-    return NextResponse.json({ message: 'Invalid password' }, { status: 400 });
-  } else if (
-    nexusData.expiry.type === NexusExpiryType.DYNAMIC &&
-    !(nexusData.expiry as NexusExpiryTypeDynamic).value
-  ) {
-    return NextResponse.json(
-      { message: 'Missing expiry value' },
-      { status: 400 },
-    );
-  } else if (
-    nexusData.expiry.type === NexusExpiryType.STATIC &&
-    (!(nexusData.expiry as NexusExpiryTypeStatic).start ||
-      !(nexusData.expiry as NexusExpiryTypeStatic).end)
-  ) {
-    return NextResponse.json(
-      {
-        message: 'Missing expiry start and/or end',
-      },
-      { status: 400 },
-    );
-  }
+
   // Parse the expiry field according to the expiry type
   // This is mainly to make the expiry field contain Timestamp object
   // instead of PlainTimestamp object
@@ -77,8 +44,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     | NexusExpiryTypeStatic
     | NexusExpiryTypeEndless;
 
-  if (nexusData.expiry.type === NexusExpiryType.DYNAMIC) {
-    const castedExpiry = nexusData.expiry as NexusExpiryTypeDynamic;
+  if (validatedNexusData.expiry.type === NexusExpiryType.DYNAMIC) {
+    const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeDynamic;
 
     parsedExpiry = {
       type: NexusExpiryType.DYNAMIC,
@@ -87,8 +54,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         castedExpiry.value.nanoseconds,
       ),
     };
-  } else if (nexusData.expiry.type === NexusExpiryType.STATIC) {
-    const castedExpiry = nexusData.expiry as NexusExpiryTypeStatic;
+  } else if (validatedNexusData.expiry.type === NexusExpiryType.STATIC) {
+    const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeStatic;
 
     parsedExpiry = {
       type: NexusExpiryType.STATIC,
@@ -107,16 +74,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     };
   }
 
+  // Encrypt the password if it exists
+  let encryptedPassword = null;
+  if (validatedNexusData.password) {
+    try {
+      encryptedPassword = await hash(validatedNexusData.password, 10);
+    } catch (error) {
+      console.log(error);
+
+      return NextResponse.json(
+        { message: NexusResponse.ENCRYPT_ERROR },
+        { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
+      );
+    }
+  }
+
   // Create the data object to be saved to the database
   // Prevents unwanted fields from being saved
   // Also as a handy reference for other usage
   const preparedNexusData: WithFieldValue<Omit<TNexus, 'id' | 'owner'>> = {
-    destination: nexusData.destination,
-    shortened: nexusData.shortened || generateString(6),
+    destination: validatedNexusData.destination,
+    shortened: validatedNexusData.shortened || generateString(6),
     expiry: parsedExpiry,
     status: NexusStatus.ACTIVE,
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    password: nexusData.password || null,
+    password: encryptedPassword,
     createdAt: serverTimestamp(),
     lastVisited: null,
   };
@@ -129,16 +110,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     if (existingDocRef.exists()) {
       return NextResponse.json(
-        { message: 'Shortened URL already taken' },
-        { status: 400 },
+        { message: NexusResponse.SHORTENED_TAKEN },
+        { status: HTTPStatusCode.BAD_REQUEST },
       );
     }
   } catch (error) {
     console.log(error);
 
     return NextResponse.json(
-      { message: 'Error getting document' },
-      { status: 500 },
+      { message: NexusResponse.DOCUMENT_GET_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
     );
   }
 
@@ -155,31 +136,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (nexusNewDocSnap.exists() && nexusNewDocSnap.data()) {
         return NextResponse.json(
           {
-            message: 'Nexus successfully created',
+            message: NexusResponse.CREATE_SUCCESS,
             ...nexusNewDocSnap.data(),
           },
-          { status: 201 },
+          { status: HTTPStatusCode.CREATED },
         );
       } else {
         return NextResponse.json(
-          { message: 'Error creating nexus' },
-          { status: 500 },
+          { message: NexusResponse.CREATE_ERROR },
+          { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
         );
       }
     } catch (error) {
       console.log(error);
 
       return NextResponse.json(
-        { message: 'Error getting the newly made nexus' },
-        { status: 500 },
+        { message: NexusResponse.NEW_DOCUMENT_GET_ERROR },
+        { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
       );
     }
   } catch (error) {
     console.log(error);
 
     return NextResponse.json(
-      { message: 'Error creating nexus' },
-      { status: 500 },
+      { message: NexusResponse.CREATE_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
     );
   }
 }

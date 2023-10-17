@@ -43,7 +43,7 @@ export type TNexus = {
   lastVisited: Timestamp | PlainTimestamp | null;
 };
 
-export type TNexusRequestData = Pick<
+export type NexusCreateRequestData = Pick<
   TNexus,
   'destination' | 'shortened' | 'expiry' | 'password'
 >;

@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import ConfigurationLinkType from './ConfigurationLinkType';
 import ConfigurationProtection from './ConfigurationProtection';
 
-import type { TNexusRequestData } from '@/types/nexus';
+import type { NexusCreateRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
 enum ConfigurationTab {
@@ -24,8 +24,8 @@ const configurationTabs = [
 ];
 
 type NexusCreateConfigurationProps = {
-  nexusData: TNexusRequestData;
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  nexusData: NexusCreateRequestData;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function HeroNexusCreateConfiguration({

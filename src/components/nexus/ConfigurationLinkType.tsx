@@ -1,18 +1,18 @@
 import { Tab } from '@headlessui/react';
 import { clsx } from 'clsx';
 import { Timestamp } from 'firebase/firestore';
+import { useCallback, type Dispatch, type SetStateAction } from 'react';
 
 import { NexusExpiryType } from '@/types/nexus';
 
 import ConfigurationLinkTypeDynamic from './ConfigurationLinkTypeDynamic';
 import ConfigurationLinkTypeStatic from './ConfigurationLinkTypeStatic';
 
-import type { TNexusRequestData } from '@/types/nexus';
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import type { NexusCreateRequestData } from '@/types/nexus';
 
 type ConfigurationLinkTypeProps = {
-  nexusData: TNexusRequestData;
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  nexusData: NexusCreateRequestData;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function ConfigurationLinkType({
@@ -48,36 +48,6 @@ export default function ConfigurationLinkType({
     },
     [setNexusData],
   );
-
-  // function onNexusExpiryTypeChange(
-  //   e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  // ): void {
-  //   const value = e.currentTarget.value as NexusExpiryType;
-
-  //   if (value === NexusExpiryType.DYNAMIC) {
-  //     setNexusData((prev) => ({
-  //       ...prev,
-  //       expiry: {
-  //         type: NexusExpiryType.DYNAMIC,
-  //         value: new Timestamp(0, 0).toJSON(),
-  //       },
-  //     }));
-  //   } else if (value === NexusExpiryType.STATIC) {
-  //     setNexusData((prev) => ({
-  //       ...prev,
-  //       expiry: {
-  //         type: NexusExpiryType.STATIC,
-  //         start: new Timestamp(0, 0).toJSON(),
-  //         end: new Timestamp(0, 0).toJSON(),
-  //       },
-  //     }));
-  //   } else if (value === NexusExpiryType.ENDLESS) {
-  //     setNexusData((prev) => ({
-  //       ...prev,
-  //       expiry: { type: NexusExpiryType.ENDLESS },
-  //     }));
-  //   }
-  // }
 
   return (
     <Tab.Group>

@@ -2,14 +2,15 @@ import { Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
 
 import { NexusExpiryType } from '@/types/nexus';
+import { HTTPStatusCode } from '@/types/response';
 
 import NexusCreateConfiguration from './NexusCreateConfiguration';
 
-import type { TNexus, TNexusRequestData } from '@/types/nexus';
+import type { TNexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
 
 export default function NexusCreate(): JSX.Element {
-  const [nexusData, setNexusData] = useState<TNexusRequestData>({
+  const [nexusData, setNexusData] = useState<NexusCreateRequestData>({
     shortened: '',
     destination: '',
     expiry: {
@@ -30,7 +31,7 @@ export default function NexusCreate(): JSX.Element {
         body: JSON.stringify(nexusData),
       });
 
-      if (req.status === 201) {
+      if (req.status === HTTPStatusCode.CREATED) {
         const { shortened }: ResponseData & TNexus = await req.json();
 
         setNexusData((prev) => {

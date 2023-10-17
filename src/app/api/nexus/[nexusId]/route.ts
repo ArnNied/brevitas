@@ -1,107 +1,102 @@
-import {
-  doc,
-  getDocFromServer,
-  serverTimestamp,
-  updateDoc,
- Timestamp } from 'firebase/firestore';
+import { compare } from 'bcrypt';
+import { serverTimestamp, updateDoc } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
-import { nexusCollection } from '@/lib/firebase/firestore';
-import { NexusExpiryType, NexusStatus } from '@/types/nexus';
+import { getAndValidateNexus } from '@/lib/nexus';
+import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
-import type {
-  NexusExpiryTypeDynamic,
-  NexusExpiryTypeStatic,
-} from '@/types/nexus';
+import type { TNexus } from '@/types/nexus';
 import type { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   // Grab the nexus ID from the URL
   const nexusId = req.nextUrl.pathname.split('/').pop();
 
-  if (!nexusId) {
-    return NextResponse.json({ message: 'Missing nexus ID' }, { status: 400 });
+  const nexusFetchResult = await getAndValidateNexus(nexusId);
+
+  if (!nexusFetchResult.success) {
+    return NextResponse.json(
+      { message: nexusFetchResult.message },
+      { status: nexusFetchResult.statusCode },
+    );
   }
 
-  const nexusDocRef = doc(nexusCollection, nexusId);
-  const nexusDocSnap = await getDocFromServer(nexusDocRef);
+  const { nexusData, nexusDocRef } = nexusFetchResult;
 
-  if (!nexusDocSnap.exists()) {
-    return NextResponse.json({ message: 'Nexus not found' }, { status: 404 });
+  if (nexusData.password !== null) {
+    return NextResponse.json(
+      { message: NexusResponse.PASSWORD_REQUIRED },
+      { status: HTTPStatusCode.UNAUTHORIZED },
+    );
   }
 
-  const nexusData = nexusDocSnap.data();
-  const now = Timestamp.now();
+  try {
+    await updateDoc(nexusDocRef, {
+      lastVisited: serverTimestamp(),
+    });
 
-  if (nexusData.status === NexusStatus.INACTIVE) {
-    return NextResponse.json({ message: 'Nexus is inactive' }, { status: 401 });
+    return NextResponse.json(
+      {
+        message: NexusResponse.FOUND,
+        ...nexusData,
+      },
+      { status: HTTPStatusCode.OK },
+    );
+  } catch (error) {
+    console.log(error);
+
+    return NextResponse.json(
+      { message: NexusResponse.UPDATE_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const reqData: Pick<TNexus, 'password'> = await req.json();
+
+  const nexusId = req.nextUrl.pathname.split('/').pop();
+
+  const nexusFetchResult = await getAndValidateNexus(nexusId);
+
+  if (!nexusFetchResult.success) {
+    return NextResponse.json(
+      { message: nexusFetchResult.message },
+      { status: nexusFetchResult.statusCode },
+    );
   }
 
-  if (nexusData.expiry.type === NexusExpiryType.DYNAMIC) {
-    // Handle dynamic expiry
-    const castedExpiry = nexusData.expiry as NexusExpiryTypeDynamic;
-    let validUntil: Timestamp;
+  const { nexusData, nexusDocRef } = nexusFetchResult;
 
-    if (nexusData.lastVisited === null) {
-      validUntil = new Timestamp(
-        nexusData.createdAt.seconds + castedExpiry.value.seconds,
-        nexusData.createdAt.nanoseconds + castedExpiry.value.nanoseconds,
+  if (nexusData.password !== null) {
+    if (!reqData.password) {
+      return NextResponse.json(
+        { message: NexusResponse.PASSWORD_MISSING },
+        { status: HTTPStatusCode.BAD_REQUEST },
       );
-    } else {
-      validUntil = new Timestamp(
-        nexusData.lastVisited.seconds + castedExpiry.value.seconds,
-        nexusData.lastVisited.nanoseconds + castedExpiry.value.nanoseconds,
+    } else if (typeof reqData.password !== 'string') {
+      return NextResponse.json(
+        { message: NexusResponse.PASSWORD_INVALID },
+        { status: HTTPStatusCode.BAD_REQUEST },
       );
     }
 
-    if (now > validUntil) {
-      try {
-        await updateDoc(nexusDocRef, {
-          status: NexusStatus.INACTIVE,
-        });
+    try {
+      const passwordMatch = await compare(reqData.password, nexusData.password);
 
-        return NextResponse.json({ message: 'Nexus expired' }, { status: 404 });
-      } catch (error) {
-        console.log(error);
-
+      if (!passwordMatch) {
         return NextResponse.json(
-          { message: 'Something went wrong' },
-          { status: 500 },
+          { message: NexusResponse.PASSWORD_INCORRECT },
+          { status: HTTPStatusCode.UNAUTHORIZED },
         );
       }
-    }
-  } else if (nexusData.expiry.type === NexusExpiryType.STATIC) {
-    // Handle static expiry
-
-    const castedExpiry = nexusData.expiry as NexusExpiryTypeStatic;
-
-    if (now < castedExpiry.start) {
-      const startDate = new Timestamp(
-        castedExpiry.start.seconds,
-        castedExpiry.start.nanoseconds,
-      ).toDate();
+    } catch (error) {
+      console.log(error);
 
       return NextResponse.json(
-        {
-          message: `Nexus can only be visited starting from ${startDate.toISOString()}`,
-        },
-        { status: 401 },
+        { message: NexusResponse.DECRYPT_ERROR },
+        { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
       );
-    } else if (now > castedExpiry.end) {
-      try {
-        await updateDoc(nexusDocRef, {
-          status: NexusStatus.INACTIVE,
-        });
-
-        return NextResponse.json({ message: 'Nexus expired' }, { status: 404 });
-      } catch (error) {
-        console.log(error);
-
-        return NextResponse.json(
-          { message: 'Something went wrong' },
-          { status: 500 },
-        );
-      }
     }
   }
 
@@ -110,16 +105,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       lastVisited: serverTimestamp(),
     });
 
-    return NextResponse.json({
-      message: 'Nexus visited',
-      ...nexusData,
-    });
+    return NextResponse.json(
+      {
+        message: NexusResponse.FOUND,
+        ...nexusData,
+      },
+      { status: HTTPStatusCode.OK },
+    );
   } catch (error) {
     console.log(error);
 
     return NextResponse.json(
-      { message: 'Something went wrong' },
-      { status: 500 },
+      { message: NexusResponse.UPDATE_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
     );
   }
 }

@@ -2,10 +2,10 @@ import { type Dispatch, type SetStateAction } from 'react';
 
 import ConfigurationLinkTypeStaticInputGroup from './ConfigurationLinkTypeStaticInputGroup';
 
-import type { TNexusRequestData } from '@/types/nexus';
+import type { NexusCreateRequestData } from '@/types/nexus';
 
 type ConfigurationLinkTypeStaticProps = {
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function ConfigurationLinkTypeStatic({

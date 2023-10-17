@@ -3,8 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import CustomSelect from '../shared/CustomSelect';
 
-import type { NexusExpiryTypeStatic, TNexusRequestData } from '@/types/nexus';
+import type {
+  NexusExpiryTypeStatic,
+  NexusCreateRequestData,
+} from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
+import { timestampNow } from '@/lib/utils';
 
 function isLeapYear(year: number): 0 | 1 {
   // Leap years are divisible by 4, except for years divisible by 100 but not by 400.
@@ -57,7 +61,7 @@ export function getDaysInMonth(year: number, monthIndex: number): number {
 
 type ConfigurationLinkTypeStaticInputGroupProps = {
   type: 'start' | 'end';
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function ConfigurationLinkTypeStaticInputGroup({
@@ -83,12 +87,11 @@ export default function ConfigurationLinkTypeStaticInputGroup({
         ...prev,
         expiry: {
           ...(prev.expiry as NexusExpiryTypeStatic),
-          [type]: new Timestamp(dt.getTime() / 1000, 0).toJSON(),
+          [type]: timestampNow(dt.getTime()).toJSON(),
         },
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, month, day, hour, minute]);
+  }, [year, month, day, hour, minute, setNexusData, type]);
 
   return (
     <fieldset className='w-full'>

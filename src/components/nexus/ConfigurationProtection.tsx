@@ -1,11 +1,11 @@
 import { clsx } from 'clsx';
 
-import type { TNexusRequestData } from '@/types/nexus';
+import type { NexusCreateRequestData } from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
 type ConfigurationProtectionProps = {
-  nexusData: TNexusRequestData;
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  nexusData: NexusCreateRequestData;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function ConfigurationProtection({

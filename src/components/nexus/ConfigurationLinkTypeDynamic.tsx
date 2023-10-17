@@ -5,7 +5,10 @@ import { NexusExpiryType } from '@/types/nexus';
 
 import CustomSelect from '../shared/CustomSelect';
 
-import type { NexusExpiryTypeDynamic, TNexusRequestData } from '@/types/nexus';
+import type {
+  NexusExpiryTypeDynamic,
+  NexusCreateRequestData,
+} from '@/types/nexus';
 import type { Dispatch, SetStateAction } from 'react';
 
 function calculateRealValue(
@@ -34,7 +37,7 @@ export enum NexusExpiryDynamicUnit {
 }
 
 type ConfigurationLinkTypeDynamicProps = {
-  setNexusData: Dispatch<SetStateAction<TNexusRequestData>>;
+  setNexusData: Dispatch<SetStateAction<NexusCreateRequestData>>;
 };
 
 export default function ConfigurationLinkTypeDynamic({
@@ -60,8 +63,7 @@ export default function ConfigurationLinkTypeDynamic({
         expiry: { ...expiryData },
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueLocal, selectedUnit]);
+  }, [valueLocal, selectedUnit, setNexusData]);
 
   return (
     <div className='space-y-2'>
@@ -76,7 +78,7 @@ export default function ConfigurationLinkTypeDynamic({
           id='link-configuration-dynamic-value'
           type='number'
           placeholder='Expiry'
-          value={valueLocal ?? 0}
+          value={typeof valueLocal === 'number' ? valueLocal : 0}
           onChange={(e): void => setValueLocal(parseInt(e.target.value))}
           className='w-full p-md rounded appearance-none input-base focus:input-primary'
         />
