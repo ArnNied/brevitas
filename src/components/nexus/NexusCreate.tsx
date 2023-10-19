@@ -96,7 +96,7 @@ export default function NexusCreate(): JSX.Element {
                   e.preventDefault();
 
                   navigator.clipboard.writeText(
-                    'http://localhost:3000/' + e.currentTarget.value,
+                    `${window.location.origin}/${e.currentTarget.value}`,
                   );
                 }}
                 className='w-full outline-none'

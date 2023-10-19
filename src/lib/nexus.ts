@@ -4,6 +4,7 @@ import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
 import { nexusCollection } from './firebase/firestore';
+import { timestampNow } from './utils';
 
 import type {
   NexusExpiryTypeDynamic,
@@ -12,7 +13,6 @@ import type {
   NexusCreateRequestData,
 } from '@/types/nexus';
 import type { DocumentReference, DocumentData } from 'firebase/firestore';
-import { timestampNow } from './utils';
 
 type ValidateNexusFailure = {
   message:
