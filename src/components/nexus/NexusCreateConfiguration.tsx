@@ -45,10 +45,9 @@ export default function HeroNexusCreateConfiguration({
             className={({ selected }): string =>
               clsx(
                 'p-sm text-start rounded focus:outline-none transition-colors',
-                {
-                  'bg-primary-100 text-primary-700': selected,
-                  'bg-gray-100 hover:bg-gray-200': !selected,
-                },
+                selected
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'bg-gray-100 hover:bg-gray-200',
               )
             }
           >

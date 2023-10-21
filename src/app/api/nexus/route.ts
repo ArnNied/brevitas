@@ -1,15 +1,14 @@
 import { hash } from 'bcrypt';
 import {
-  doc,
+  addDoc,
   getDocFromServer,
   serverTimestamp,
-  setDoc,
   Timestamp,
 } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
 import { nexusCollection } from '@/lib/firebase/firestore';
-import { validateNexusData } from '@/lib/nexus';
+import { getNexus, validateNexusData } from '@/lib/nexus';
 import { generateString } from '@/lib/utils';
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
@@ -94,7 +93,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Also as a handy reference for other usage
   const preparedNexusData: WithFieldValue<Omit<TNexus, 'id' | 'owner'>> = {
     destination: validatedNexusData.destination,
-    shortened: validatedNexusData.shortened || generateString(6),
+    shortened: validatedNexusData.shortened,
     expiry: parsedExpiry,
     status: NexusStatus.ACTIVE,
     password: encryptedPassword,
@@ -104,15 +103,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // Check if the shortened URL is already taken
   try {
-    const existingDocRef = await getDocFromServer(
-      doc(nexusCollection, preparedNexusData.shortened as string),
-    );
-
-    if (existingDocRef.exists()) {
-      return NextResponse.json(
-        { message: NexusResponse.SHORTENED_TAKEN },
-        { status: HTTPStatusCode.BAD_REQUEST },
+    if (preparedNexusData.shortened) {
+      const existingNexus = await getNexus(
+        preparedNexusData.shortened as string,
       );
+
+      if (existingNexus !== null) {
+        return NextResponse.json(
+          { message: NexusResponse.SHORTENED_TAKEN },
+          { status: HTTPStatusCode.BAD_REQUEST },
+        );
+      }
+    } else {
+      let existingNexus = null;
+      let randomString = '';
+
+      do {
+        randomString = generateString(8);
+
+        existingNexus = await getNexus(randomString);
+      } while (existingNexus !== null);
+
+      preparedNexusData.shortened = randomString;
     }
   } catch (error) {
     console.log(error);
@@ -124,11 +136,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const nexusNewDocRef = doc(
-      nexusCollection,
-      preparedNexusData.shortened as string,
-    );
-    await setDoc(nexusNewDocRef, preparedNexusData);
+    const nexusNewDocRef = await addDoc(nexusCollection, preparedNexusData);
 
     try {
       const nexusNewDocSnap = await getDocFromServer(nexusNewDocRef);

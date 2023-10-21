@@ -58,10 +58,12 @@ export default function ConfigurationLinkType({
             onClick={(e): void => onNexusExpiryTypeChange(e)}
             value={expiryType}
             className={({ selected }): string =>
-              clsx('w-full p-md rounded focus:outline-none transition-colors', {
-                'bg-primary-100 text-primary-700': selected,
-                'hover:bg-gray-200': !selected,
-              })
+              clsx(
+                'w-full p-md rounded focus:outline-none transition-colors',
+                selected
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'bg-transparent hover:bg-gray-200',
+              )
             }
           >
             {expiryType}

@@ -38,10 +38,13 @@ export default function ConfigurationProtection({
               password: '',
             }));
           }}
-          className={clsx('px-2 py-0.5 rounded transition-colors', {
-            'bg-red-500 focus:bg-red-600 text-white': nexusData.password !== '',
-            'bg-gray-100 text-gray-500': nexusData.password === '',
-          })}
+          disabled={nexusData.password === ''}
+          className={clsx(
+            'px-2 py-0.5 rounded transition-colors',
+            nexusData.password === ''
+              ? 'bg-gray-100 text-gray-500'
+              : 'bg-red-500 focus:bg-red-600 text-white',
+          )}
         >
           Clear
         </button>

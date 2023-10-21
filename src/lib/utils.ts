@@ -1,18 +1,10 @@
 import { Timestamp } from 'firebase/firestore';
+import { customAlphabet } from 'nanoid';
 
-export function generateString(length: number): string {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
+export function generateString(length: number = 8): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-  let counter = 0;
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
-  }
-
-  return result;
+  return customAlphabet(characters, length)();
 }
 
 export function timestampNow(nowInMs?: number): Timestamp {

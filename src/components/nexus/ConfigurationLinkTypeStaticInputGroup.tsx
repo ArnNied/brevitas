@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
 import { timestampNow } from '@/lib/utils';
@@ -20,7 +19,7 @@ function isLeapYear(year: number): 0 | 1 {
   }
 }
 
-export function getMonthList(
+function getMonthList(
   localeName = 'en-US',
   monthFormat: Intl.DateTimeFormatOptions['month'] = 'long',
 ): string[] {
@@ -32,7 +31,7 @@ export function getMonthList(
   );
 }
 
-export function getDaysInMonth(year: number, monthIndex: number): number {
+function getDaysInMonth(year: number, monthIndex: number): number {
   // Ensure the monthIndex is within the valid range (0-11)
   if (monthIndex < 0 || monthIndex > 11) {
     throw new Error(

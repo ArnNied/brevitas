@@ -31,12 +31,9 @@ export default function CustomSelect<T extends string | number>({
         ref={refs.setReference}
         className={({ open }): string =>
           clsx(
-            'w-full h-full p-md text-start rounded input-base capitalize',
-            width,
-            {
-              'input-primary': open,
-              'w-full': !width,
-            },
+            'h-full p-md text-start rounded input-base capitalize',
+            width ?? 'w-full',
+            open && 'input-primary',
           )
         }
       >
@@ -53,10 +50,12 @@ export default function CustomSelect<T extends string | number>({
             value={typeof value === 'object' ? value.value : value}
             // className='p-sm hover:bg-gray-200'
             className={({ selected }): string =>
-              clsx('p-sm cursor-pointer', {
-                'bg-primary-100 text-primary-700': selected,
-                'hover:bg-gray-200': !selected,
-              })
+              clsx(
+                'p-sm cursor-pointer',
+                selected
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'hover:bg-gray-200',
+              )
             }
           >
             {typeof value === 'object' ? value.label : value}

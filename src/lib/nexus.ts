@@ -1,4 +1,11 @@
-import { doc, getDocFromServer, Timestamp } from 'firebase/firestore';
+import {
+  doc,
+  getDocFromServer,
+  getDocs,
+  query,
+  Timestamp,
+  where,
+} from 'firebase/firestore';
 
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
@@ -89,16 +96,25 @@ export async function getNexus(nexusId: string): Promise<{
   nexusData: TNexus;
   nexusDocRef: DocumentReference<TNexus, DocumentData>;
 } | null> {
-  const nexusDocRef = doc(nexusCollection, nexusId);
-  const nexusDocSnap = await getDocFromServer(nexusDocRef);
+  const q = query(nexusCollection, where('shortened', '==', nexusId));
+  const qSnapshot = await getDocs(q);
 
-  if (nexusDocSnap.exists()) {
-    const nexusData = nexusDocSnap.data();
+  if (!qSnapshot.empty) {
+    const nexusDocRef = doc(nexusCollection, qSnapshot.docs[0].id);
+    const nexusDoc = await getDocFromServer(nexusDocRef);
 
-    return {
-      nexusData,
-      nexusDocRef,
-    };
+    // Should always exist since the previous query already checked for it
+    // But just in case
+    if (nexusDoc.exists()) {
+      const nexusData = nexusDoc.data();
+
+      return {
+        nexusData,
+        nexusDocRef,
+      };
+    } else {
+      return null;
+    }
   } else {
     return null;
   }
