@@ -8,6 +8,7 @@ import NexusCreateConfiguration from './NexusCreateConfiguration';
 
 import type { TNexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
+import { auth } from '@/lib/firebase/core';
 
 export default function NexusCreate(): JSX.Element {
   const [nexusData, setNexusData] = useState<NexusCreateRequestData>({
@@ -28,7 +29,7 @@ export default function NexusCreate(): JSX.Element {
     try {
       const req = await fetch('/api/nexus', {
         method: 'POST',
-        body: JSON.stringify(nexusData),
+        body: JSON.stringify({ ...nexusData, owner: auth.currentUser?.uid }),
       });
 
       if (req.status === HTTPStatusCode.CREATED) {
@@ -111,9 +112,9 @@ export default function NexusCreate(): JSX.Element {
           </button>
         </div>
 
-        <div className='flex flex-row items-center space-x-4'>
+        <div className='flex flex-row items-center'>
           <div className='flex grow h-0.5 bg-gray-300'></div>
-          <p className='text-sm text-gray-400 tracking-widest cursor-default'>
+          <p className='mx-2 text-sm text-gray-400 tracking-widest cursor-default'>
             CONFIGURATION
           </p>
           <div className='flex grow h-0.5 bg-gray-300'></div>

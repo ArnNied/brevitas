@@ -6,7 +6,7 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import type { FirebaseOptions } from 'firebase/app';
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -23,7 +23,7 @@ function getFirebaseConfig(): FirebaseOptions {
     }
   });
 
-  return firebaseConfig as FirebaseOptions;
+  return firebaseConfig;
 }
 
 export const firebaseApp = initializeApp(getFirebaseConfig());
