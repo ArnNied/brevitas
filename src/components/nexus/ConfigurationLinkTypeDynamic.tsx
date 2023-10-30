@@ -1,3 +1,5 @@
+'use client';
+
 import { Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 

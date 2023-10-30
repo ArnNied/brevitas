@@ -1,3 +1,5 @@
+'use client';
+
 import { useFloating, flip, shift, offset } from '@floating-ui/react-dom';
 import { Listbox } from '@headlessui/react';
 import { clsx } from 'clsx';

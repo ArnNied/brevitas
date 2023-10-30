@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import { HTTPStatusCode } from '@/types/response';
+import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
-import type { TNexus } from '@/types/nexus';
+import type { Nexus } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
 
 type RedirectPasswordRequiredProps = {
@@ -28,10 +28,12 @@ export default function RedirectPasswordRequired({
           method: 'POST',
           body: JSON.stringify({ password }),
         });
-        const res: ResponseData & TNexus = await req.json();
+        const res: ResponseData & Nexus = await req.json();
 
         if (req.status === HTTPStatusCode.OK) {
           router.push(res.destination);
+        } else if (res.message === NexusResponse.PASSWORD_INCORRECT) {
+          alert(res.message);
         } else if (req.status === HTTPStatusCode.UNAUTHORIZED) {
           router.refresh();
         } else {

@@ -28,7 +28,7 @@ export type NexusExpiryTypeEndless = {
   type: NexusExpiryType;
 };
 
-export type TNexus = {
+export type Nexus = {
   owner: string | null;
   destination: string;
   shortened: string;
@@ -43,6 +43,6 @@ export type TNexus = {
 };
 
 export type NexusCreateRequestData = Pick<
-  TNexus,
+  Nexus,
   'destination' | 'shortened' | 'expiry' | 'password'
 >;

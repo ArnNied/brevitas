@@ -41,6 +41,8 @@ export default function NavbarLogin(): JSX.Element {
           await signInWithRedirect(auth, provider);
         } catch (err) {
           console.error(err);
+
+          signInMode('SET', 'popup');
         }
       } else {
         try {

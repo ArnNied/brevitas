@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { nexusCollection } from '@/lib/server/firebase/firestore';
 import { getNexus, validateNexusData } from '@/lib/server/nexus';
+import { authenticateUser } from '@/lib/server/utils';
 import { generateString } from '@/lib/utils';
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
@@ -13,19 +14,22 @@ import type {
   NexusExpiryTypeDynamic,
   NexusExpiryTypeEndless,
   NexusExpiryTypeStatic,
-  TNexus,
+  Nexus,
 } from '@/types/nexus';
 import type { WithFieldValue } from 'firebase-admin/firestore';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const reqData: NexusCreateRequestData = await req.json();
+  const bearerToken = req.headers.get('authorization');
+  const bearerUid = await authenticateUser(bearerToken);
+
+  const reqBody: NexusCreateRequestData = await req.json();
 
   const requiredNexusData: Partial<NexusCreateRequestData> = {
-    destination: reqData.destination,
-    shortened: reqData.shortened,
-    expiry: reqData.expiry,
-    password: reqData.password,
+    destination: reqBody.destination,
+    shortened: reqBody.shortened,
+    expiry: reqBody.expiry,
+    password: reqBody.password,
   };
 
   const validatedNexusData = validateNexusData(requiredNexusData);
@@ -93,8 +97,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Create the data object to be saved to the database
   // Prevents unwanted fields from being saved
   // Also as a handy reference for other usage
-  const preparedNexusData: WithFieldValue<TNexus> = {
-    owner: null,
+  const preparedNexusData: WithFieldValue<Nexus> = {
+    owner: bearerUid,
     destination: validatedNexusData.destination as string,
     shortened: validatedNexusData.shortened as string,
     expiry: parsedExpiry,

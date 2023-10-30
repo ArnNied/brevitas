@@ -11,18 +11,18 @@ import { nexusCollection } from './firebase/firestore';
 import type {
   NexusExpiryTypeDynamic,
   NexusExpiryTypeStatic,
-  TNexus,
+  Nexus,
 } from '@/types/nexus';
 import type { DocumentReference } from 'firebase-admin/firestore';
 
 export function validateNexusData(
-  nexusData: Partial<TNexus>,
+  nexusData: Partial<Nexus>,
   prune: boolean = false,
-): Partial<TNexus> | NexusResponse {
+): Partial<Nexus> | NexusResponse {
   if (prune) {
     Object.keys(nexusData).forEach((key) => {
-      if (nexusData[key as keyof TNexus] === undefined) {
-        delete nexusData[key as keyof TNexus];
+      if (nexusData[key as keyof Nexus] === undefined) {
+        delete nexusData[key as keyof Nexus];
       }
     });
   }
@@ -105,8 +105,8 @@ export function validateNexusData(
 }
 
 type GetNexusSuccess = {
-  nexusData: TNexus;
-  nexusDocRef: DocumentReference<TNexus>;
+  nexusData: Nexus;
+  nexusDocRef: DocumentReference<Nexus>;
 };
 
 export async function getNexus(
@@ -125,7 +125,7 @@ export async function getNexus(
     // Should always exist since the previous query already checked for it
     // But just in case
     if (nexusDoc.exists) {
-      const nexusData = nexusDoc.data() as TNexus;
+      const nexusData = nexusDoc.data() as Nexus;
 
       return {
         nexusData,
@@ -147,7 +147,7 @@ type ValidateNexusFailure = {
   statusCode: HTTPStatusCode.NOT_FOUND | HTTPStatusCode.UNAUTHORIZED;
 };
 
-export function validateNexus(nexusData: TNexus): ValidateNexusFailure | null {
+export function validateNexus(nexusData: Nexus): ValidateNexusFailure | null {
   const now = timestampNow();
 
   if (nexusData.status === NexusStatus.INACTIVE) {
@@ -212,8 +212,8 @@ export type GetAndValidateNexusFailure = {
 
 export type GetAndValidateNexusSuccess = {
   success: true;
-  nexusData: TNexus;
-  nexusDocRef: DocumentReference<TNexus>;
+  nexusData: Nexus;
+  nexusDocRef: DocumentReference<Nexus>;
 };
 
 export async function getAndValidateNexus(

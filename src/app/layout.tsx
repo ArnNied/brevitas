@@ -1,5 +1,6 @@
 import './globals.scss';
 
+import AuthContextProvider from '@/components/context/AuthContextProvider';
 import SharedNavbar from '@/components/shared/Navbar';
 
 import type { Metadata } from 'next';
@@ -17,8 +18,10 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className='pb-12 bg-background-base text-text-base antialiased'>
-        <SharedNavbar />
-        <main>{children}</main>
+        <AuthContextProvider>
+          <SharedNavbar />
+          <main>{children}</main>
+        </AuthContextProvider>
       </body>
     </html>
   );

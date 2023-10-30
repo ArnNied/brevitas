@@ -1,5 +1,7 @@
 import { customAlphabet } from 'nanoid';
 
+import type { User } from 'firebase/auth';
+
 export function generateString(length: number = 8): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -11,4 +13,18 @@ export function hasOwnProperty<X extends object, Y extends PropertyKey>(
   prop: Y,
 ): obj is X & Record<Y, unknown> {
   return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+export async function constructHeader(user: User | null): Promise<Headers> {
+  const headers = new Headers();
+
+  headers.append('Content-Type', 'application/json');
+
+  if (user) {
+    const token = await user.getIdToken();
+
+    headers.append('Authorization', `Bearer ${token}`);
+  }
+
+  return headers;
 }

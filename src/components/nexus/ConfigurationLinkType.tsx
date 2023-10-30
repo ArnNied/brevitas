@@ -1,3 +1,5 @@
+'use client';
+
 import { Tab } from '@headlessui/react';
 import { clsx } from 'clsx';
 import { Timestamp } from 'firebase/firestore';

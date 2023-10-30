@@ -56,7 +56,7 @@ export default async function NexusRedirectPage({
       message = 'Link Inactive';
       subMessage = [
         'The link you are trying to access is inactive.',
-        'Please contact the owner if you think this is a mistake.',
+        'Contact the owner if you think this is a mistake.',
       ];
     } else if (status === NexusResponse.TOO_EARLY) {
       message = 'Too Early';

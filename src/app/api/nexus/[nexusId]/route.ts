@@ -2,11 +2,10 @@ import { compare } from 'bcrypt';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { NextResponse } from 'next/server';
 
-import { nexusCollection } from '@/lib/server/firebase/firestore';
 import { getAndValidateNexus, validateNexusData } from '@/lib/server/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
-import type { TNexus } from '@/types/nexus';
+import type { Nexus } from '@/types/nexus';
 import type { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -50,7 +49,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const reqData: Pick<TNexus, 'password'> = await req.json();
+  const reqBody: Pick<Nexus, 'password'> = await req.json();
 
   const nexusId = req.nextUrl.pathname.split('/').pop();
 
@@ -67,7 +66,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (nexusData.password !== null) {
     const validatedInputPassword = validateNexusData({
-      password: reqData.password,
+      password: reqBody.password,
     });
 
     if (typeof validatedInputPassword === 'string') {

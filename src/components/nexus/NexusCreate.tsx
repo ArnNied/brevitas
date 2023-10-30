@@ -1,16 +1,22 @@
-import { Timestamp } from 'firebase/firestore';
-import { useState } from 'react';
+'use client';
 
-import { auth } from '@/lib/client/firebase/core';
+import { Timestamp } from 'firebase/firestore';
+import { useCallback, useState } from 'react';
+
+import { constructHeader } from '@/lib/utils';
 import { NexusExpiryType } from '@/types/nexus';
 import { HTTPStatusCode } from '@/types/response';
 
+import { useAuthContext } from '../context/AuthContextProvider';
+
 import NexusCreateConfiguration from './NexusCreateConfiguration';
 
-import type { TNexus, NexusCreateRequestData } from '@/types/nexus';
+import type { Nexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
 
 export default function NexusCreate(): JSX.Element {
+  const { authUser } = useAuthContext();
+
   const [nexusData, setNexusData] = useState<NexusCreateRequestData>({
     shortened: '',
     destination: '',
@@ -21,36 +27,38 @@ export default function NexusCreate(): JSX.Element {
     password: '',
   });
 
-  async function onSaveHandler(
-    e: React.FormEvent<HTMLFormElement>,
-  ): Promise<void> {
-    e.preventDefault();
+  const onSaveHandler = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+      e.preventDefault();
 
-    try {
-      const req = await fetch('/api/nexus', {
-        method: 'POST',
-        body: JSON.stringify({ ...nexusData, owner: auth.currentUser?.uid }),
-      });
-
-      if (req.status === HTTPStatusCode.CREATED) {
-        const { shortened }: ResponseData & TNexus = await req.json();
-
-        setNexusData((prev) => {
-          return {
-            ...prev,
-            shortened: shortened,
-          };
+      try {
+        const req = await fetch('/api/nexus', {
+          method: 'POST',
+          headers: await constructHeader(authUser),
+          body: JSON.stringify({ ...nexusData }),
         });
-      } else {
-        const { message }: ResponseData = await req.json();
 
-        alert(`${req.status} ${req.statusText}: ${message}`);
+        if (req.status === HTTPStatusCode.CREATED) {
+          const { shortened }: ResponseData & Nexus = await req.json();
+
+          // Update the shortened URL input
+          setNexusData((prev) => {
+            return {
+              ...prev,
+              shortened: shortened,
+            };
+          });
+        } else {
+          const { message }: ResponseData = await req.json();
+
+          alert(`${req.status} ${req.statusText}: ${message}`);
+        }
+      } catch (err) {
+        console.error(err);
       }
-      // Update the shortened URL input
-    } catch (err) {
-      console.error(err);
-    }
-  }
+    },
+    [authUser, nexusData],
+  );
 
   return (
     <div className='p-8 bg-white rounded shadow-md shadow-primary/20'>
@@ -79,7 +87,7 @@ export default function NexusCreate(): JSX.Element {
             <label htmlFor='link-shortened' className='block font-semibold'>
               Your Shortened URL
             </label>
-            <div className='flex flex-row items-center p-md input-base focus-within:input-primary'>
+            <div className='flex flex-row items-center px-3 input-base focus-within:input-primary'>
               <span className=''>https://brev.id/</span>
               <input
                 id='link-shortened'
@@ -100,7 +108,7 @@ export default function NexusCreate(): JSX.Element {
                     `${window.location.origin}/${e.currentTarget.value}`,
                   );
                 }}
-                className='w-full outline-none'
+                className='w-full py-2 outline-none'
               />
             </div>
           </div>

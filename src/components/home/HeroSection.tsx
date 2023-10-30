@@ -1,5 +1,3 @@
-'use client';
-
 import NexusCreate from '@/components/nexus/NexusCreate';
 
 export default function HomeHeroSection(): JSX.Element {
