@@ -1,7 +1,6 @@
 // import { getAnalytics } from 'firebase/analytics';
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 import type { FirebaseOptions } from 'firebase/app';
 
@@ -26,12 +25,12 @@ function getFirebaseConfig(): FirebaseOptions {
   return firebaseConfig;
 }
 
-export const firebaseApp = initializeApp(getFirebaseConfig());
+export const firebaseApp = initializeApp(getFirebaseConfig(), 'client');
 // export const analytics = getAnalytics(firebaseApp);
 export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
+// export const db = getFirestore(firebaseApp);
 
 if (process.env.NODE_ENV === 'development') {
-  connectFirestoreEmulator(db, 'localhost', 8080);
   connectAuthEmulator(auth, 'http://localhost:9099');
+  // connectFirestoreEmulator(db, 'localhost', 8080);
 }

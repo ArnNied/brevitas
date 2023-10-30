@@ -1,6 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
 
+import { auth } from '@/lib/client/firebase/core';
 import { NexusExpiryType } from '@/types/nexus';
 import { HTTPStatusCode } from '@/types/response';
 
@@ -8,7 +9,6 @@ import NexusCreateConfiguration from './NexusCreateConfiguration';
 
 import type { TNexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
-import { auth } from '@/lib/firebase/core';
 
 export default function NexusCreate(): JSX.Element {
   const [nexusData, setNexusData] = useState<NexusCreateRequestData>({

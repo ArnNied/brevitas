@@ -26,15 +26,21 @@ export enum NexusResponse {
   ID_MISSING = 'Missing nexus ID',
   ID_INVALID = 'Invalid nexus ID',
 
+  STATUS_MISSING = 'Missing nexus status',
+  STATUS_INVALID = 'Invalid nexus status',
+  STATUS_ACTIVE = 'Nexus is active',
   STATUS_INACTIVE = 'Nexus is inactive',
+  STATUS_ARCHIVED = 'Nexus is archived',
 
   DESTINATION_MISSING = 'Missing destination',
   DESTINATION_INVALID = 'Invalid destination',
 
-  SHORTENED_TAKEN = 'Shortened URL already taken',
   SHORTENED_INVALID = 'Invalid shortened',
+  SHORTENED_MISSING = 'Missing shortened URL',
+  SHORTENED_TAKEN = 'Shortened URL already taken',
 
   EXPIRY_MISSING = 'Missing expiry',
+  EXPIRY_INVALID = 'Invalid expiry',
 
   EXPIRY_TYPE_MISSING = 'Missing expiry type',
   EXPIRY_TYPE_INVALID = 'Invalid expiry type',

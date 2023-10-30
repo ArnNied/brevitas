@@ -1,8 +1,9 @@
 import { compare } from 'bcrypt';
-import { serverTimestamp, updateDoc } from 'firebase/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { NextResponse } from 'next/server';
 
-import { getAndValidateNexus } from '@/lib/nexus';
+import { nexusCollection } from '@/lib/server/firebase/firestore';
+import { getAndValidateNexus, validateNexusData } from '@/lib/server/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
 import type { TNexus } from '@/types/nexus';
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const { nexusData, nexusDocRef } = nexusFetchResult;
+  const { nexusData } = nexusFetchResult;
 
   if (nexusData.password !== null) {
     return NextResponse.json(
@@ -31,10 +32,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    await updateDoc(nexusDocRef, {
-      lastVisited: serverTimestamp(),
-    });
-
     return NextResponse.json(
       {
         message: NexusResponse.FOUND,
@@ -43,7 +40,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       { status: HTTPStatusCode.OK },
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return NextResponse.json(
       { message: NexusResponse.UPDATE_ERROR },
@@ -69,20 +66,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const { nexusData, nexusDocRef } = nexusFetchResult;
 
   if (nexusData.password !== null) {
-    if (!reqData.password) {
+    const validatedInputPassword = validateNexusData({
+      password: reqData.password,
+    });
+
+    if (typeof validatedInputPassword === 'string') {
       return NextResponse.json(
-        { message: NexusResponse.PASSWORD_MISSING },
-        { status: HTTPStatusCode.BAD_REQUEST },
-      );
-    } else if (typeof reqData.password !== 'string') {
-      return NextResponse.json(
-        { message: NexusResponse.PASSWORD_INVALID },
+        { message: validatedInputPassword },
         { status: HTTPStatusCode.BAD_REQUEST },
       );
     }
 
     try {
-      const passwordMatch = await compare(reqData.password, nexusData.password);
+      const passwordMatch = await compare(
+        validatedInputPassword.password as string,
+        nexusData.password,
+      );
 
       if (!passwordMatch) {
         return NextResponse.json(
@@ -91,7 +90,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       return NextResponse.json(
         { message: NexusResponse.DECRYPT_ERROR },
@@ -101,19 +100,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    await updateDoc(nexusDocRef, {
-      lastVisited: serverTimestamp(),
+    const updatedTimestamp = await nexusDocRef.update({
+      lastVisited: FieldValue.serverTimestamp(),
     });
 
     return NextResponse.json(
       {
         message: NexusResponse.FOUND,
         ...nexusData,
+        lastVisited: new Timestamp(
+          updatedTimestamp.writeTime.seconds,
+          updatedTimestamp.writeTime.nanoseconds,
+        ),
       },
       { status: HTTPStatusCode.OK },
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return NextResponse.json(
       { message: NexusResponse.UPDATE_ERROR },

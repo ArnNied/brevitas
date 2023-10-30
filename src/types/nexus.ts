@@ -29,8 +29,7 @@ export type NexusExpiryTypeEndless = {
 };
 
 export type TNexus = {
-  id: string;
-  owner: string;
+  owner: string | null;
   destination: string;
   shortened: string;
   status: NexusStatus;

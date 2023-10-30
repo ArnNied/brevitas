@@ -33,7 +33,7 @@ export default function RedirectPasswordRequired({
         if (req.status === HTTPStatusCode.OK) {
           router.push(res.destination);
         } else if (req.status === HTTPStatusCode.UNAUTHORIZED) {
-          window.location.reload();
+          router.refresh();
         } else {
           alert('Something went wrong');
         }

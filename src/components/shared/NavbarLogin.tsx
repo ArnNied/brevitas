@@ -8,14 +8,15 @@ import {
   getAdditionalUserInfo,
   getRedirectResult,
   signInWithPopup,
-  UserCredential,
 } from 'firebase/auth';
 import { useState, Fragment, useCallback, useEffect } from 'react';
 import { AiFillGithub, AiOutlineClose } from 'react-icons/ai';
 import { FcGoogle } from 'react-icons/fc';
 
-import { auth } from '@/lib/firebase/core';
-import { signInMode } from '@/lib/utils';
+import { auth } from '@/lib/client/firebase/core';
+import { signInMode } from '@/lib/client/utils';
+
+import type { UserCredential } from 'firebase/auth';
 
 const Providers = [
   {

@@ -1,36 +1,38 @@
 import { hash } from 'bcrypt';
-import {
-  addDoc,
-  getDocFromServer,
-  serverTimestamp,
-  Timestamp,
-} from 'firebase/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { NextResponse } from 'next/server';
 
-import { nexusCollection } from '@/lib/firebase/firestore';
-import { getNexus, validateNexusData } from '@/lib/nexus';
+import { nexusCollection } from '@/lib/server/firebase/firestore';
+import { getNexus, validateNexusData } from '@/lib/server/nexus';
 import { generateString } from '@/lib/utils';
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
 
 import type {
+  NexusCreateRequestData,
   NexusExpiryTypeDynamic,
   NexusExpiryTypeEndless,
   NexusExpiryTypeStatic,
   TNexus,
-  NexusCreateRequestData,
 } from '@/types/nexus';
-import type { WithFieldValue } from 'firebase/firestore';
+import type { WithFieldValue } from 'firebase-admin/firestore';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const reqData: NexusCreateRequestData = await req.json();
 
-  const validatedNexusData = validateNexusData(reqData);
+  const requiredNexusData: Partial<NexusCreateRequestData> = {
+    destination: reqData.destination,
+    shortened: reqData.shortened,
+    expiry: reqData.expiry,
+    password: reqData.password,
+  };
 
-  if (typeof validatedNexusData !== 'object') {
+  const validatedNexusData = validateNexusData(requiredNexusData);
+
+  if (typeof validatedNexusData === 'string') {
     return NextResponse.json(
-      { message: validateNexusData },
+      { message: validatedNexusData },
       { status: HTTPStatusCode.BAD_REQUEST },
     );
   }
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     | NexusExpiryTypeStatic
     | NexusExpiryTypeEndless;
 
-  if (validatedNexusData.expiry.type === NexusExpiryType.DYNAMIC) {
+  if (validatedNexusData.expiry?.type === NexusExpiryType.DYNAMIC) {
     const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeDynamic;
 
     parsedExpiry = {
@@ -52,8 +54,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         castedExpiry.value.seconds,
         castedExpiry.value.nanoseconds,
       ),
-    };
-  } else if (validatedNexusData.expiry.type === NexusExpiryType.STATIC) {
+    } as NexusExpiryTypeDynamic;
+  } else if (validatedNexusData.expiry?.type === NexusExpiryType.STATIC) {
     const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeStatic;
 
     parsedExpiry = {
@@ -66,11 +68,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         castedExpiry.end.seconds,
         castedExpiry.end.nanoseconds,
       ),
-    };
+    } as NexusExpiryTypeStatic;
   } else {
     parsedExpiry = {
       type: NexusExpiryType.ENDLESS,
-    };
+    } as NexusExpiryTypeEndless;
   }
 
   // Encrypt the password if it exists
@@ -79,7 +81,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
       encryptedPassword = await hash(validatedNexusData.password, 10);
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       return NextResponse.json(
         { message: NexusResponse.ENCRYPT_ERROR },
@@ -91,13 +93,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Create the data object to be saved to the database
   // Prevents unwanted fields from being saved
   // Also as a handy reference for other usage
-  const preparedNexusData: WithFieldValue<Omit<TNexus, 'id' | 'owner'>> = {
-    destination: validatedNexusData.destination,
-    shortened: validatedNexusData.shortened,
+  const preparedNexusData: WithFieldValue<TNexus> = {
+    owner: null,
+    destination: validatedNexusData.destination as string,
+    shortened: validatedNexusData.shortened as string,
     expiry: parsedExpiry,
     status: NexusStatus.ACTIVE,
     password: encryptedPassword,
-    createdAt: serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     lastVisited: null,
   };
 
@@ -127,7 +130,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       preparedNexusData.shortened = randomString;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return NextResponse.json(
       { message: NexusResponse.DOCUMENT_GET_ERROR },
@@ -136,12 +139,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const nexusNewDocRef = await addDoc(nexusCollection, preparedNexusData);
+    const nexusNewDocRef = await nexusCollection.add(preparedNexusData);
 
     try {
-      const nexusNewDocSnap = await getDocFromServer(nexusNewDocRef);
+      const nexusNewDocSnap = await nexusCollection
+        .doc(nexusNewDocRef.id)
+        .get();
 
-      if (nexusNewDocSnap.exists() && nexusNewDocSnap.data()) {
+      if (nexusNewDocSnap.exists && nexusNewDocSnap.data()) {
         return NextResponse.json(
           {
             message: NexusResponse.CREATE_SUCCESS,
@@ -156,7 +161,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       return NextResponse.json(
         { message: NexusResponse.NEW_DOCUMENT_GET_ERROR },
@@ -164,7 +169,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return NextResponse.json(
       { message: NexusResponse.CREATE_ERROR },

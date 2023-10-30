@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { timestampNow } from '@/lib/utils';
+import { timestampNow } from '@/lib/client/utils';
 
 import CustomSelect from '../shared/CustomSelect';
 
