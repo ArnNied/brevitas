@@ -1,12 +1,5 @@
+import { PlainTimestamp } from '@/types/shared';
 import { Timestamp } from 'firebase/firestore';
-
-export function timestampNow(nowInMs?: number): Timestamp {
-  if (nowInMs) {
-    return new Timestamp(Math.floor(nowInMs / 1000), 0);
-  } else {
-    return new Timestamp(Math.floor(Date.now() / 1000), 0);
-  }
-}
 
 export function signInMode(
   action: 'GET' | 'SET' | 'DELETE',
@@ -27,4 +20,19 @@ export function signInMode(
 
     return item ? (item as 'redirect' | 'popup') : 'redirect';
   }
+}
+
+export function formatToPlainTimestamp(
+  timestamp: Timestamp | PlainTimestamp,
+): PlainTimestamp {
+  return {
+    seconds: timestamp.seconds,
+    nanoseconds: timestamp.nanoseconds,
+  };
+}
+
+export function formatToTimestamp(
+  plainTimestamp: Timestamp | PlainTimestamp,
+): Timestamp {
+  return new Timestamp(plainTimestamp.seconds, plainTimestamp.nanoseconds);
 }

@@ -28,15 +28,17 @@ export type NexusExpiryTypeEndless = {
   type: NexusExpiryType;
 };
 
+export type NexusExpiry =
+  | NexusExpiryTypeDynamic
+  | NexusExpiryTypeStatic
+  | NexusExpiryTypeEndless;
+
 export type Nexus = {
   owner: string | null;
   destination: string;
   shortened: string;
   status: NexusStatus;
-  expiry:
-    | NexusExpiryTypeDynamic
-    | NexusExpiryTypeStatic
-    | NexusExpiryTypeEndless;
+  expiry: NexusExpiry;
   password: string | null;
   createdAt: Timestamp | PlainTimestamp;
   lastVisited: Timestamp | PlainTimestamp | null;

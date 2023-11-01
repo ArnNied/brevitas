@@ -2,9 +2,9 @@
 
 import { Tab } from '@headlessui/react';
 import { clsx } from 'clsx';
-import { Timestamp } from 'firebase/firestore';
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
 
+import { timestampNow } from '@/lib/utils';
 import { NexusExpiryType } from '@/types/nexus';
 
 import ConfigurationLinkTypeDynamic from './ConfigurationLinkTypeDynamic';
@@ -29,7 +29,7 @@ export default function ConfigurationLinkType({
           ...prev,
           expiry: {
             type: NexusExpiryType.DYNAMIC,
-            value: new Timestamp(0, 0).toJSON(),
+            value: timestampNow().toJSON(),
           },
         }));
       } else if (value === NexusExpiryType.STATIC) {
@@ -37,8 +37,8 @@ export default function ConfigurationLinkType({
           ...prev,
           expiry: {
             type: NexusExpiryType.STATIC,
-            start: new Timestamp(0, 0).toJSON(),
-            end: new Timestamp(0, 0).toJSON(),
+            start: timestampNow().toJSON(),
+            end: timestampNow().toJSON(),
           },
         }));
       } else if (value === NexusExpiryType.ENDLESS) {

@@ -1,11 +1,12 @@
 import { compare } from 'bcrypt';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { NextResponse } from 'next/server';
 
 import { getAndValidateNexus, validateNexusData } from '@/lib/server/nexus';
-import { HTTPStatusCode, NexusResponse } from '@/types/response';
+import { formatToPlainTimestamp } from '@/lib/server/utils';
+import { BasicResponse, HTTPStatusCode, NexusResponse } from '@/types/response';
 
-import type { Nexus } from '@/types/nexus';
+import type { Nexus, NexusCreateRequestData } from '@/types/nexus';
 import type { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -49,9 +50,33 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const reqBody: Pick<Nexus, 'password'> = await req.json();
-
   const nexusId = req.nextUrl.pathname.split('/').pop();
+
+  let requiredNexusData: Pick<Nexus, 'password'>;
+
+  try {
+    const reqBody: Pick<Nexus, 'password'> = await req.json();
+
+    requiredNexusData = {
+      password: reqBody.password,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { message: BasicResponse.BODY_PARSE_ERROR },
+      { status: HTTPStatusCode.BAD_REQUEST },
+    );
+  }
+
+  const validatedNexusData = validateNexusData(requiredNexusData);
+
+  if (typeof validatedNexusData === 'string') {
+    return NextResponse.json(
+      { message: validatedNexusData },
+      { status: HTTPStatusCode.BAD_REQUEST },
+    );
+  }
 
   const nexusFetchResult = await getAndValidateNexus(nexusId);
 
@@ -65,20 +90,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const { nexusData, nexusDocRef } = nexusFetchResult;
 
   if (nexusData.password !== null) {
-    const validatedInputPassword = validateNexusData({
-      password: reqBody.password,
-    });
-
-    if (typeof validatedInputPassword === 'string') {
-      return NextResponse.json(
-        { message: validatedInputPassword },
-        { status: HTTPStatusCode.BAD_REQUEST },
-      );
-    }
-
     try {
       const passwordMatch = await compare(
-        validatedInputPassword.password as string,
+        validatedNexusData.password as string,
         nexusData.password,
       );
 
@@ -107,10 +121,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       {
         message: NexusResponse.FOUND,
         ...nexusData,
-        lastVisited: new Timestamp(
-          updatedTimestamp.writeTime.seconds,
-          updatedTimestamp.writeTime.nanoseconds,
-        ),
+        lastVisited: formatToPlainTimestamp(updatedTimestamp.writeTime),
       },
       { status: HTTPStatusCode.OK },
     );

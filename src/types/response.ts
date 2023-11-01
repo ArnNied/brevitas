@@ -7,6 +7,10 @@ export enum HTTPStatusCode {
   INTERNAL_SERVER_ERROR = 500,
 }
 
+export enum BasicResponse {
+  BODY_PARSE_ERROR = 'Error parsing request body',
+}
+
 export enum NexusResponse {
   DOCUMENT_GET_ERROR = 'Error getting nexus document',
   NEW_DOCUMENT_GET_ERROR = 'Error getting newly created nexus document',
@@ -61,4 +65,16 @@ export enum NexusResponse {
 
   TOO_EARLY = 'Too early',
   EXPIRED = 'Nexus expired',
+}
+
+export enum AuthResponse {
+  JWT_OR_API_KEY_INVALID = 'Invalid JWT or API key',
+
+  API_KEY_CREATE_SUCCESS = 'API key successfully created',
+  API_KEY_CREATE_ERROR = 'Error creating API key',
+
+  JWT_INVALID = 'Invalid JWT',
+  JWT_DECODE_ERROR = 'Error decoding JWT',
+
+  HASHING_ERROR = 'Error hashing API key',
 }

@@ -1,10 +1,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
 
+import { timestampNow, hasOwnProperty } from '@/lib/utils';
 import { NexusExpiryType, NexusStatus } from '@/types/nexus';
 import { HTTPStatusCode, NexusResponse } from '@/types/response';
-
-import { timestampNow } from '../server/utils';
-import { hasOwnProperty } from '../utils';
 
 import { nexusCollection } from './firebase/firestore';
 
@@ -95,8 +93,11 @@ export function validateNexusData(
     }
   }
 
-  if (hasOwnProperty(nexusData, 'password') && nexusData.password !== null) {
-    if (typeof nexusData.password !== 'string') {
+  if (hasOwnProperty(nexusData, 'password')) {
+    if (
+      typeof nexusData.password !== 'string' &&
+      (nexusData.password !== null || nexusData.password !== undefined)
+    ) {
       return NexusResponse.PASSWORD_INVALID;
     }
   }

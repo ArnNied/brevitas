@@ -6,31 +6,36 @@ import { nexusCollection } from '@/lib/server/firebase/firestore';
 import { getNexus, validateNexusData } from '@/lib/server/nexus';
 import { authenticateUser } from '@/lib/server/utils';
 import { generateString } from '@/lib/utils';
-import { NexusExpiryType, NexusStatus } from '@/types/nexus';
-import { HTTPStatusCode, NexusResponse } from '@/types/response';
+import { NexusStatus } from '@/types/nexus';
+import { BasicResponse, HTTPStatusCode, NexusResponse } from '@/types/response';
 
-import type {
-  NexusCreateRequestData,
-  NexusExpiryTypeDynamic,
-  NexusExpiryTypeEndless,
-  NexusExpiryTypeStatic,
-  Nexus,
-} from '@/types/nexus';
+import type { NexusCreateRequestData, Nexus, NexusExpiry } from '@/types/nexus';
 import type { WithFieldValue } from 'firebase-admin/firestore';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const bearerToken = req.headers.get('authorization');
-  const bearerUid = await authenticateUser(bearerToken);
+  const authorizationHeader = req.headers.get('authorization');
+  const bearerUid = await authenticateUser(authorizationHeader);
 
-  const reqBody: NexusCreateRequestData = await req.json();
+  let requiredNexusData: Partial<NexusCreateRequestData>;
 
-  const requiredNexusData: Partial<NexusCreateRequestData> = {
-    destination: reqBody.destination,
-    shortened: reqBody.shortened,
-    expiry: reqBody.expiry,
-    password: reqBody.password,
-  };
+  try {
+    const reqBody: NexusCreateRequestData = await req.json();
+
+    requiredNexusData = {
+      destination: reqBody.destination,
+      shortened: reqBody.shortened,
+      expiry: reqBody.expiry,
+      password: reqBody.password,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { message: BasicResponse.BODY_PARSE_ERROR },
+      { status: HTTPStatusCode.BAD_REQUEST },
+    );
+  }
 
   const validatedNexusData = validateNexusData(requiredNexusData);
 
@@ -39,44 +44,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { message: validatedNexusData },
       { status: HTTPStatusCode.BAD_REQUEST },
     );
-  }
-
-  // Parse the expiry field according to the expiry type
-  // This is mainly to make the expiry field contain Timestamp object
-  // instead of PlainTimestamp object
-  let parsedExpiry:
-    | NexusExpiryTypeDynamic
-    | NexusExpiryTypeStatic
-    | NexusExpiryTypeEndless;
-
-  if (validatedNexusData.expiry?.type === NexusExpiryType.DYNAMIC) {
-    const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeDynamic;
-
-    parsedExpiry = {
-      type: NexusExpiryType.DYNAMIC,
-      value: new Timestamp(
-        castedExpiry.value.seconds,
-        castedExpiry.value.nanoseconds,
-      ),
-    } as NexusExpiryTypeDynamic;
-  } else if (validatedNexusData.expiry?.type === NexusExpiryType.STATIC) {
-    const castedExpiry = validatedNexusData.expiry as NexusExpiryTypeStatic;
-
-    parsedExpiry = {
-      type: NexusExpiryType.STATIC,
-      start: new Timestamp(
-        castedExpiry.start.seconds,
-        castedExpiry.start.nanoseconds,
-      ),
-      end: new Timestamp(
-        castedExpiry.end.seconds,
-        castedExpiry.end.nanoseconds,
-      ),
-    } as NexusExpiryTypeStatic;
-  } else {
-    parsedExpiry = {
-      type: NexusExpiryType.ENDLESS,
-    } as NexusExpiryTypeEndless;
   }
 
   // Encrypt the password if it exists
@@ -101,7 +68,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     owner: bearerUid,
     destination: validatedNexusData.destination as string,
     shortened: validatedNexusData.shortened as string,
-    expiry: parsedExpiry,
+    expiry: validatedNexusData.expiry as NexusExpiry,
     status: NexusStatus.ACTIVE,
     password: encryptedPassword,
     createdAt: FieldValue.serverTimestamp(),

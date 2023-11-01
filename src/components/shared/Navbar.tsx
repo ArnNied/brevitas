@@ -1,8 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 
-import NavbarLogin from './NavbarLogin';
+import { useAuthContext } from '../context/AuthContextProvider';
 
-export default function SharedNavbar(): JSX.Element {
+import NavbarDashboardTemporary from './NavbarDashboardTemporary';
+import NavbarLoginButton from './NavbarLoginButton';
+
+export default function Navbar(): JSX.Element {
+  const { authUser } = useAuthContext();
+
   return (
     <>
       <header className='w-full'>
@@ -16,7 +23,7 @@ export default function SharedNavbar(): JSX.Element {
             </Link>
           </div>
           <div className='flex items-center'>
-            <NavbarLogin />
+            {authUser ? <NavbarDashboardTemporary /> : <NavbarLoginButton />}
           </div>
         </div>
       </header>

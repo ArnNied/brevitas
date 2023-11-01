@@ -1,9 +1,8 @@
 'use client';
 
-import { Timestamp } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 
-import { constructHeader } from '@/lib/utils';
+import { constructHeader, timestampNow } from '@/lib/utils';
 import { NexusExpiryType } from '@/types/nexus';
 import { HTTPStatusCode } from '@/types/response';
 
@@ -13,6 +12,7 @@ import NexusCreateConfiguration from './NexusCreateConfiguration';
 
 import type { Nexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
+import { Timestamp } from 'firebase/firestore';
 
 export default function NexusCreate(): JSX.Element {
   const { authUser } = useAuthContext();
@@ -114,7 +114,7 @@ export default function NexusCreate(): JSX.Element {
           </div>
           <button
             type='submit'
-            className='w-full p-md bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded transition-colors'
+            className='w-full p-md font-semibold rounded button-primary'
           >
             Shorten Link
           </button>
