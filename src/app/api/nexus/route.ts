@@ -7,11 +7,53 @@ import { getNexus, validateNexusData } from '@/lib/server/nexus';
 import { authenticateUser } from '@/lib/server/utils';
 import { generateString } from '@/lib/utils';
 import { NexusStatus } from '@/types/nexus';
-import { BasicResponse, HTTPStatusCode, NexusResponse } from '@/types/response';
+import {
+  AuthResponse,
+  BasicResponse,
+  HTTPStatusCode,
+  NexusResponse,
+} from '@/types/response';
 
 import type { NexusCreateRequestData, Nexus, NexusExpiry } from '@/types/nexus';
 import type { WithFieldValue } from 'firebase-admin/firestore';
 import type { NextRequest } from 'next/server';
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const authorizationHeader = req.headers.get('authorization');
+  const bearerUid = await authenticateUser(authorizationHeader);
+
+  if (!bearerUid) {
+    return NextResponse.json(
+      { message: AuthResponse.JWT_OR_API_KEY_INVALID },
+      { status: HTTPStatusCode.UNAUTHORIZED },
+    );
+  }
+
+  try {
+    const listOfNexusOwnedByUserSnap = await nexusCollection
+      .where('owner', '==', bearerUid)
+      .get();
+
+    const listOfNexusOwnedByUser = listOfNexusOwnedByUserSnap.docs.map((doc) =>
+      doc.data(),
+    );
+
+    return NextResponse.json(
+      {
+        message: NexusResponse.FOUND,
+        data: listOfNexusOwnedByUser,
+      },
+      { status: HTTPStatusCode.OK },
+    );
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { message: NexusResponse.DOCUMENT_GET_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const authorizationHeader = req.headers.get('authorization');
