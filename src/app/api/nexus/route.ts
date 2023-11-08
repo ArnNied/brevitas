@@ -59,7 +59,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const authorizationHeader = req.headers.get('authorization');
   const bearerUid = await authenticateUser(authorizationHeader);
 
-  let requiredNexusData: Partial<NexusCreateRequestData>;
+  let requiredNexusData: NexusCreateRequestData;
 
   try {
     const reqBody: NexusCreateRequestData = await req.json();
@@ -79,14 +79,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const validatedNexusData = validateNexusData(requiredNexusData);
+  const validateNexusDataResult = validateNexusData(requiredNexusData);
 
-  if (typeof validatedNexusData === 'string') {
+  if (validateNexusDataResult.error) {
     return NextResponse.json(
-      { message: validatedNexusData },
-      { status: HTTPStatusCode.BAD_REQUEST },
+      { message: validateNexusDataResult.message },
+      { status: validateNexusDataResult.statusCode },
     );
   }
+
+  const validatedNexusData = validateNexusDataResult.nexusData;
 
   // Encrypt the password if it exists
   let encryptedPassword = null;
@@ -114,6 +116,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     status: NexusStatus.ACTIVE,
     password: encryptedPassword,
     createdAt: FieldValue.serverTimestamp(),
+    updatedAt: null,
     lastVisited: null,
   };
 
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         preparedNexusData.shortened as string,
       );
 
-      if (existingNexus !== null) {
+      if (existingNexus.exist) {
         return NextResponse.json(
           { message: NexusResponse.SHORTENED_TAKEN },
           { status: HTTPStatusCode.BAD_REQUEST },
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         randomString = generateString(8);
 
         existingNexus = await getNexus(randomString);
-      } while (existingNexus !== null);
+      } while (existingNexus.exist);
 
       preparedNexusData.shortened = randomString;
     }

@@ -41,6 +41,7 @@ export type Nexus = {
   expiry: NexusExpiry;
   password: string | null;
   createdAt: Timestamp | PlainTimestamp;
+  updatedAt: Timestamp | PlainTimestamp | null;
   lastVisited: Timestamp | PlainTimestamp | null;
 };
 

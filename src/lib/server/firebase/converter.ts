@@ -1,7 +1,9 @@
 import {
+  WithFieldValue,
   type DocumentData,
   type FirestoreDataConverter,
   type QueryDocumentSnapshot,
+  PartialWithFieldValue,
 } from 'firebase-admin/firestore';
 
 import { formatToPlainTimestamp, formatToTimestamp } from '@/lib/server/utils';
@@ -65,13 +67,14 @@ export const nexusConverter: FirestoreDataConverter<Nexus> = {
       }
     }
 
-    const parsedItem: Nexus = {
+    const parsedItem: Omit<Nexus, 'id'> = {
       ...item,
       expiry: parsedExpiry,
     };
 
     return parsedItem as DocumentData;
   },
+
   fromFirestore(snapshot: QueryDocumentSnapshot): Nexus {
     const data = snapshot.data() as Nexus;
 
@@ -111,9 +114,17 @@ export const nexusConverter: FirestoreDataConverter<Nexus> = {
 
     return {
       id: snapshot.id,
-      ...data,
+      owner: data.owner,
+      destination: data.destination,
+      shortened: data.shortened,
+      status: data.status,
+      password: data.password,
       expiry: parsedExpiry,
+      lastVisited: data.lastVisited
+        ? formatToPlainTimestamp(data.lastVisited)
+        : null,
       createdAt: formatToPlainTimestamp(data.createdAt),
+      updatedAt: data.updatedAt ? formatToPlainTimestamp(data.updatedAt) : null,
     } as Nexus & { id: string };
   },
 };
@@ -122,12 +133,15 @@ export const apiKeyConverter: FirestoreDataConverter<ApiKey> = {
   toFirestore(item: ApiKey): DocumentData {
     return item as DocumentData;
   },
+
   fromFirestore(snapshot: QueryDocumentSnapshot): ApiKey {
     const data = snapshot.data() as ApiKey;
 
     return {
       id: snapshot.id,
-      ...data,
+      owner: data.owner,
+      key: data.key,
+      lastUsed: data.lastUsed ? formatToPlainTimestamp(data.lastUsed) : null,
       createdAt: formatToPlainTimestamp(data.createdAt),
     } as ApiKey & { id: string };
   },

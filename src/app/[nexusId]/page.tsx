@@ -7,7 +7,7 @@ import { getAndValidateNexus } from '@/lib/server/nexus';
 import { NexusResponse } from '@/types/response';
 
 import type {
-  GetAndValidateNexusFailure,
+  GetAndValidateNexusFailed,
   GetAndValidateNexusSuccess,
 } from '@/lib/server/nexus';
 
@@ -24,7 +24,7 @@ export default async function NexusRedirectPage({
 
   let docUpdateError = false;
 
-  let validatedNexus: GetAndValidateNexusFailure | GetAndValidateNexusSuccess;
+  let validatedNexus: GetAndValidateNexusFailed | GetAndValidateNexusSuccess;
 
   try {
     validatedNexus = await getAndValidateNexus(nexusId);
@@ -43,7 +43,7 @@ export default async function NexusRedirectPage({
     );
   }
 
-  if (!validatedNexus.success) {
+  if (!validatedNexus.valid) {
     status = validatedNexus.message;
 
     if (status === NexusResponse.NOT_FOUND) {
@@ -103,7 +103,7 @@ export default async function NexusRedirectPage({
       {status === NexusResponse.PASSWORD_REQUIRED && (
         <RedirectPasswordRequired nexusId={nexusId} />
       )}
-      {(!validatedNexus.success || docUpdateError) && (
+      {(!validatedNexus.valid || docUpdateError) && (
         <header className='text-center'>
           <h2 className='mb-2 font-bold text-5xl text-primary-500'>
             {message}

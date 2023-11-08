@@ -27,6 +27,8 @@ export enum NexusResponse {
   FOUND = 'Nexus found',
   NOT_FOUND = 'Nexus not found',
 
+  NOT_OWNER = 'You are not the owner of this nexus',
+
   ID_MISSING = 'Missing nexus ID',
   ID_INVALID = 'Invalid nexus ID',
 
