@@ -8,7 +8,12 @@ import {
   validateNexusData,
 } from '@/lib/server/nexus';
 import { authenticateUser, formatToPlainTimestamp } from '@/lib/server/utils';
-import { BasicResponse, HTTPStatusCode, NexusResponse } from '@/types/response';
+import {
+  AuthResponse,
+  BasicResponse,
+  HTTPStatusCode,
+  NexusResponse,
+} from '@/types/response';
 
 import type { Nexus } from '@/types/nexus';
 import type { NextRequest } from 'next/server';
@@ -146,6 +151,13 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
   const authorizationHeader = req.headers.get('authorization');
   const bearerUid = await authenticateUser(authorizationHeader);
 
+  if (!bearerUid) {
+    return NextResponse.json(
+      { message: AuthResponse.JWT_OR_API_KEY_INVALID },
+      { status: HTTPStatusCode.UNAUTHORIZED },
+    );
+  }
+
   let reqBody: Partial<Nexus>;
 
   try {
@@ -237,6 +249,13 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
 
   const authorizationHeader = req.headers.get('authorization');
   const bearerUid = await authenticateUser(authorizationHeader);
+
+  if (!bearerUid) {
+    return NextResponse.json(
+      { message: AuthResponse.JWT_OR_API_KEY_INVALID },
+      { status: HTTPStatusCode.UNAUTHORIZED },
+    );
+  }
 
   const existingNexus = await getNexus(nexusId);
 
