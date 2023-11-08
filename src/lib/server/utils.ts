@@ -1,9 +1,11 @@
 import sha256 from 'crypto-js/sha256';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
+
 import { authAdmin } from './firebase/core';
 import { apiKeyCollection } from './firebase/firestore';
-import { PlainTimestamp } from '@/types/shared';
+
+import type { PlainTimestamp } from '@/types/shared';
 
 export async function authenticateUser(
   authorizationHeader: string | null | undefined,

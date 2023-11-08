@@ -1,5 +1,6 @@
-import { PlainTimestamp } from '@/types/shared';
 import { Timestamp } from 'firebase/firestore';
+
+import type { PlainTimestamp } from '@/types/shared';
 
 export function signInMode(
   action: 'GET' | 'SET' | 'DELETE',

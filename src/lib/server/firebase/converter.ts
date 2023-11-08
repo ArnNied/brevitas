@@ -1,11 +1,3 @@
-import {
-  WithFieldValue,
-  type DocumentData,
-  type FirestoreDataConverter,
-  type QueryDocumentSnapshot,
-  PartialWithFieldValue,
-} from 'firebase-admin/firestore';
-
 import { formatToPlainTimestamp, formatToTimestamp } from '@/lib/server/utils';
 import { NexusExpiryType } from '@/types/nexus';
 
@@ -16,6 +8,11 @@ import type {
   NexusExpiryTypeEndless,
   NexusExpiryTypeStatic,
 } from '@/types/nexus';
+import type {
+  DocumentData,
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+} from 'firebase-admin/firestore';
 
 export function genericFirestoreDataConverter<T>(): FirestoreDataConverter<T> {
   return {

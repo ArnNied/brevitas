@@ -1,8 +1,9 @@
 'use client';
 
+import { Timestamp } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 
-import { constructHeader, timestampNow } from '@/lib/utils';
+import { constructHeader } from '@/lib/utils';
 import { NexusExpiryType } from '@/types/nexus';
 import { HTTPStatusCode } from '@/types/response';
 
@@ -12,7 +13,6 @@ import NexusCreateConfiguration from './NexusCreateConfiguration';
 
 import type { Nexus, NexusCreateRequestData } from '@/types/nexus';
 import type { ResponseData } from '@/types/shared';
-import { Timestamp } from 'firebase/firestore';
 
 export default function NexusCreate(): JSX.Element {
   const { authUser } = useAuthContext();

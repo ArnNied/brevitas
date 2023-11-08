@@ -1,5 +1,5 @@
 import { hash } from 'bcrypt';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { NextResponse } from 'next/server';
 
 import { nexusCollection } from '@/lib/server/firebase/firestore';

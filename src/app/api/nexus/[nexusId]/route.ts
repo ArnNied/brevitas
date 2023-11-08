@@ -231,3 +231,44 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     );
   }
 }
+
+export async function DELETE(req: NextRequest): Promise<NextResponse> {
+  const nexusId = req.nextUrl.pathname.split('/').pop() as string;
+
+  const authorizationHeader = req.headers.get('authorization');
+  const bearerUid = await authenticateUser(authorizationHeader);
+
+  const existingNexus = await getNexus(nexusId);
+
+  if (!existingNexus.exist) {
+    return NextResponse.json(
+      { message: existingNexus.message },
+      { status: existingNexus.statusCode },
+    );
+  }
+
+  const { nexusData, nexusDocRef } = existingNexus;
+
+  if (nexusData.owner !== bearerUid) {
+    return NextResponse.json(
+      { message: NexusResponse.NOT_OWNER },
+      { status: HTTPStatusCode.UNAUTHORIZED },
+    );
+  }
+
+  try {
+    await nexusDocRef.delete();
+
+    return NextResponse.json(
+      { message: NexusResponse.DELETE_SUCCESS },
+      { status: HTTPStatusCode.OK },
+    );
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { message: NexusResponse.DELETE_ERROR },
+      { status: HTTPStatusCode.INTERNAL_SERVER_ERROR },
+    );
+  }
+}

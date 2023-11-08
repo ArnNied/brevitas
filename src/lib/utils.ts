@@ -1,7 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import { customAlphabet } from 'nanoid';
 
-import type { PlainTimestamp } from '@/types/shared';
 import type { User } from 'firebase/auth';
 
 export function generateString(length: number = 8): string {
